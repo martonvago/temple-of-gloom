@@ -80,12 +80,17 @@ public class Explorer {
     public void escape(EscapeState state) {
         int maxWeight = state.getTimeRemaining();
         Node start = state.getCurrentNode();
+        Node exit = state.getExit();
         Set<Node> visitedNodes = new HashSet<>();
         Set<Node> candidateNodes = new HashSet<>();
         Map<Long, PathOptions> pathMap = new HashMap<>();
-        while (visitedNodes.size() < state.getVertices().size()) {
+
+        PathOptions startOptions = new PathOptions(maxWeight);
+        startOptions.addPath(new Path(start));
+        pathMap.put(start.getId(), startOptions);
+        while (!visitedNodes.contains(exit)) {
             Node closestCandidate = candidateNodes.stream()
-                    .min(Comparator.comparingInt((candidate-> pathMap.get(candidate.getId()).getShortestWeight())))
+                    .min(Comparator.comparing(candidate -> pathMap.get(candidate.getId()).getShortest()))
                     .orElse(start);
             PathOptions closestPathOptions = pathMap.getOrDefault(
                     closestCandidate.getId(),
@@ -109,9 +114,9 @@ public class Explorer {
             visitedNodes.add(closestCandidate);
         }
 
-        Path richestToExit = pathMap.get(state.getExit().getId()).getRichest();
+        Path richestToExit = pathMap.get(exit.getId()).getRichest();
         pickUpGoldIfAny(state);
-        richestToExit.getPath().forEach(node -> {
+        richestToExit.getPath().stream().skip(1).forEach(node -> {
             state.moveTo(node);
             pickUpGoldIfAny(state);
         });

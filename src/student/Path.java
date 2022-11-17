@@ -4,8 +4,9 @@ import game.Node;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Path {
+public class Path implements Comparable<Path> {
     private final List<Node> path;
 
     public Path(List<Node> path) {
@@ -24,11 +25,11 @@ public class Path {
         path.add(node);
     }
 
-    public int getGold() {
+    public Integer getGold() {
         return path.stream().mapToInt(node -> node.getTile().getGold()).sum();
     }
 
-    public int getWeight() {
+    public Integer getWeight() {
         int sum = 0;
         for (int i = 1; i < path.size(); i++) {
             Node prev = path.get(i - 1);
@@ -41,5 +42,13 @@ public class Path {
         Path pathCopy = new Path(new ArrayList<>(path));
         pathCopy.addNode(node);
         return pathCopy;
+    }
+
+    @Override
+    public int compareTo(Path otherPath) {
+        if (!Objects.equals(this.getWeight(), otherPath.getWeight())) {
+            return this.getWeight().compareTo(otherPath.getWeight());
+        }
+        return this.getGold().compareTo(otherPath.getGold()) * -1;
     }
 }

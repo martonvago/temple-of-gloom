@@ -39,7 +39,7 @@ public class PathOptions {
             return;
         }
 
-        if (shortest == null || path.getWeight() < shortest.getWeight()) {
+        if (shortest == null || path.compareTo(shortest) < 0) {
             shortest = path;
         }
         if (richest == null || path.getGold() > richest.getGold()) {
@@ -47,9 +47,5 @@ public class PathOptions {
         }
 
         paths.add(path);
-    }
-
-    public int getShortestWeight() {
-        return shortest.getWeight();
     }
 }
