@@ -97,9 +97,9 @@ public class Explorer {
                         PathOptions oldPathOptions = pathMap.get(neighbour.getId());
                         PathOptions newPathOptions = new PathOptions(oldPathOptions, maxWeight);
 
-                        closestPathOptions.getPaths().forEach(path -> newPathOptions.addPath(clonePathWithNode(path, neighbour)));
+                        closestPathOptions.getPaths().forEach(path -> newPathOptions.addPath(path.cloneWithNode(neighbour)));
                         if (newPathOptions.getPaths().isEmpty()) {
-                            newPathOptions.addPath(List.of(neighbour));
+                            newPathOptions.addPath(new Path(neighbour));
                         }
 
                         pathMap.put(neighbour.getId(), newPathOptions);
@@ -109,18 +109,12 @@ public class Explorer {
             visitedNodes.add(closestCandidate);
         }
 
-        List<Node> richestToExit = pathMap.get(state.getExit().getId()).getRichest();
+        Path richestToExit = pathMap.get(state.getExit().getId()).getRichest();
         pickUpGoldIfAny(state);
-        richestToExit.forEach(node -> {
+        richestToExit.getPath().forEach(node -> {
             state.moveTo(node);
             pickUpGoldIfAny(state);
         });
-    }
-
-    private List<Node> clonePathWithNode(List<Node> path, Node node) {
-        List<Node> pathCopy = new ArrayList<>(path);
-        pathCopy.add(node);
-        return pathCopy;
     }
 
     private void pickUpGoldIfAny(EscapeState state) {
