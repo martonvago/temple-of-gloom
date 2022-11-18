@@ -78,6 +78,15 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
+        Path shortPathToExit = findShortPath(state);
+        pickUpGoldIfAny(state);
+        shortPathToExit.getPath().stream().skip(1).forEach(node -> {
+            state.moveTo(node);
+            pickUpGoldIfAny(state);
+        });
+    }
+
+    private Path findShortPath(EscapeState state) {
         int maxWeight = state.getTimeRemaining();
         Node start = state.getCurrentNode();
         Node exit = state.getExit();
@@ -114,12 +123,7 @@ public class Explorer {
             visitedNodes.add(closestCandidate);
         }
 
-        Path richestToExit = pathMap.get(exit.getId()).getRichest();
-        pickUpGoldIfAny(state);
-        richestToExit.getPath().stream().skip(1).forEach(node -> {
-            state.moveTo(node);
-            pickUpGoldIfAny(state);
-        });
+        return pathMap.get(exit.getId()).getRichest();
     }
 
     private void pickUpGoldIfAny(EscapeState state) {
