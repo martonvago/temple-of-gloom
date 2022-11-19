@@ -79,11 +79,21 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         int maxWeight = state.getTimeRemaining();
-        Path shortestPath = findShortestPath(state);
-        Path betterPath = enhancePathBetter(shortestPath, maxWeight);
+        Path path = findShortestPath(state);
+
+        int unusedBudget = maxWeight - path.getWeight();
+        int oldSize = path.getSize();
+        while (unusedBudget > 0) {
+            path = enhancePath(path, maxWeight);
+            if (oldSize >= path.getSize()) {
+                break;
+            }
+            unusedBudget = maxWeight - path.getWeight();
+            oldSize = path.getSize();
+        }
 
         pickUpGoldIfAny(state);
-        betterPath.getPath().stream().skip(1).forEach(node -> {
+        path.getPath().stream().skip(1).forEach(node -> {
             state.moveTo(node);
             pickUpGoldIfAny(state);
         });
@@ -119,7 +129,7 @@ public class Explorer {
         return pathMap.get(state.getExit().getId());
     }
 
-    private Path enhancePathBetter(Path basePath, int maxWeight) {
+    private Path enhancePath(Path basePath, int maxWeight) {
         List<Node> basePathNodes = basePath.getPath();
         Set<Node> done = new HashSet<>(basePathNodes);
         Path enhancedPath = new Path(new ArrayList<>());
@@ -130,10 +140,16 @@ public class Explorer {
         int leftoverBudget = 0;
         for (int i = 0; i < basePathNodes.size() - 1; i++) {
             Node nodeOnPath = basePathNodes.get(i);
+
             Integer budget = spareWeightsForNodes.pop() + leftoverBudget;
             Path enhancedPathForNode = enhanceNode(nodeOnPath, done, budget);
-            leftoverBudget = budget - enhancedPathForNode.getWeight();
-            enhancedPath.joinPath(enhancedPathForNode);
+            if (enhancedPathForNode.getGold() - nodeOnPath.getTile().getGold() > 0) {
+                leftoverBudget = budget - enhancedPathForNode.getWeight();
+                enhancedPath.joinPath(enhancedPathForNode);
+            } else {
+                enhancedPath.addNode(nodeOnPath);
+                leftoverBudget = budget;
+            }
         }
         enhancedPath.addNode(basePath.getPath().get(basePath.getPath().size()-1));
         return enhancedPath;

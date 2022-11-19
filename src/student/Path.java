@@ -3,8 +3,10 @@ package student;
 import game.Node;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Path implements Comparable<Path> {
     private final List<Node> path;
@@ -26,7 +28,7 @@ public class Path implements Comparable<Path> {
     }
 
     public Integer getGold() {
-        return path.stream().mapToInt(node -> node.getTile().getGold()).sum();
+        return new HashSet<>(path).stream().mapToInt(node -> node.getTile().getGold()).sum();
     }
 
     public Integer getWeight() {
