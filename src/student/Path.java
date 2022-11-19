@@ -44,9 +44,21 @@ public class Path implements Comparable<Path> {
         return pathCopy;
     }
 
+    public void joinPath(Path path) {
+        this.path.addAll(path.getPath());
+    }
+
     public void replaceAtIndex(List<Node> nodes, int index) {
         path.remove(index);
         path.addAll(index, nodes);
+    }
+
+    public int getSize() {
+        return path.size();
+    }
+
+    public Node getNode(int index) {
+        return path.get(index);
     }
 
     @Override

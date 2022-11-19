@@ -80,7 +80,7 @@ public class Explorer {
     public void escape(EscapeState state) {
         int maxWeight = state.getTimeRemaining();
         Path shortestPath = findShortestPath(state);
-        Path betterPath = enhancePath(shortestPath, maxWeight);
+        Path betterPath = enhancePathBetter(shortestPath, maxWeight);
 
         pickUpGoldIfAny(state);
         betterPath.getPath().stream().skip(1).forEach(node -> {
@@ -119,28 +119,60 @@ public class Explorer {
         return pathMap.get(state.getExit().getId());
     }
 
-    private Path enhancePath(Path basePath, int maxWeight) {
-        final int[] spareWeight = {maxWeight - basePath.getWeight()};
+    private Path enhancePathBetter(Path basePath, int maxWeight) {
         List<Node> basePathNodes = basePath.getPath();
+        Set<Node> done = new HashSet<>(basePathNodes);
+        Path enhancedPath = new Path(new ArrayList<>());
 
-        for (int i = 0; i < basePathNodes.size(); i++) {
-            if (spareWeight[0] <= 0) {
-                return basePath;
-            }
+        //deal with e = s
 
+        Stack<Integer> spareWeightsForNodes = getSpareWeightsForNodes(basePath, maxWeight);
+        int leftoverBudget = 0;
+        for (int i = 0; i < basePathNodes.size() - 1; i++) {
             Node nodeOnPath = basePathNodes.get(i);
-            int replaceAt = i;
-            nodeOnPath.getNeighbours().stream()
-                    .filter(neighbour -> !basePath.getPath().contains(neighbour))
-                    .forEach(neighbour -> {
-                        Path pathToNeighbourAndBack = new Path(List.of(nodeOnPath, neighbour, nodeOnPath));
-                        if (spareWeight[0] - pathToNeighbourAndBack.getWeight() >= 0) {
-                            basePath.replaceAtIndex(pathToNeighbourAndBack.getPath(), replaceAt);
-                            spareWeight[0] -= pathToNeighbourAndBack.getWeight();
-                        }
-                    });
+            Integer budget = spareWeightsForNodes.pop() + leftoverBudget;
+            Path enhancedPathForNode = enhanceNode(nodeOnPath, done, budget);
+            leftoverBudget = budget - enhancedPathForNode.getWeight();
+            enhancedPath.joinPath(enhancedPathForNode);
         }
-        return basePath;
+        enhancedPath.addNode(basePath.getPath().get(basePath.getPath().size()-1));
+        return enhancedPath;
+    }
+
+    private Path enhanceNode(Node node, Set<Node> done, Integer budget) {
+        Path nodeLoop = new Path(node);
+        int i = 0;
+        while (i < nodeLoop.getPath().size()) {
+            Node current = nodeLoop.getPath().get(i);
+
+            List<Node> neighbours = current.getNeighbours().stream()
+                    .filter(neighbour -> !done.contains(neighbour))
+                    .toList();
+
+            for (Node neighbour : neighbours) {
+                Path pathToNeighbourAndBack = new Path(List.of(current, neighbour, current));
+                if (budget - pathToNeighbourAndBack.getWeight() >= 0) {
+                    nodeLoop.replaceAtIndex(pathToNeighbourAndBack.getPath(), i);
+                    done.add(neighbour);
+                    budget -= pathToNeighbourAndBack.getWeight();
+                }
+            }
+            i++;
+        }
+        return nodeLoop;
+    }
+
+    private Stack<Integer> getSpareWeightsForNodes(Path path, int maxWeight) {
+        Stack<Integer> weights = new Stack<>();
+        int nodeNumber = path.getPath().size() - 1;
+
+        int spareWeight = maxWeight - path.getWeight();
+        int allocated = spareWeight / nodeNumber;
+        int toAllocate = spareWeight % nodeNumber;
+        for (int i = 0; i < nodeNumber; i++) {
+            weights.push(i < toAllocate ? allocated + 1 : allocated);
+        }
+        return weights;
     }
 
     private void pickUpGoldIfAny(EscapeState state) {
