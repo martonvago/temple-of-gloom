@@ -78,52 +78,69 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        Path shortPathToExit = findShortPath(state);
+        int maxWeight = state.getTimeRemaining();
+        Path shortestPath = findShortestPath(state);
+        Path betterPath = enhancePath(shortestPath, maxWeight);
+
         pickUpGoldIfAny(state);
-        shortPathToExit.getPath().stream().skip(1).forEach(node -> {
+        betterPath.getPath().stream().skip(1).forEach(node -> {
             state.moveTo(node);
             pickUpGoldIfAny(state);
         });
     }
 
-    private Path findShortPath(EscapeState state) {
-        int maxWeight = state.getTimeRemaining();
+    private Path findShortestPath(EscapeState state) {
         Node start = state.getCurrentNode();
         Node exit = state.getExit();
         Set<Node> visitedNodes = new HashSet<>();
         Set<Node> candidateNodes = new HashSet<>();
-        Map<Long, PathOptions> pathMap = new HashMap<>();
+        Map<Long, Path> pathMap = new HashMap<>();
 
-        PathOptions startOptions = new PathOptions(maxWeight);
-        startOptions.addPath(new Path(start));
-        pathMap.put(start.getId(), startOptions);
+        pathMap.put(start.getId(), new Path(start));
         while (!visitedNodes.contains(exit)) {
             Node closestCandidate = candidateNodes.stream()
-                    .min(Comparator.comparing(candidate -> pathMap.get(candidate.getId()).getShortest()))
+                    .min(Comparator.comparing((candidate-> pathMap.get(candidate.getId()))))
                     .orElse(start);
-            PathOptions closestPathOptions = pathMap.getOrDefault(
-                    closestCandidate.getId(),
-                    new PathOptions(maxWeight)
-            );
+            Path pathToClosest = pathMap.get(closestCandidate.getId());
             closestCandidate.getNeighbours().stream()
                     .filter(neighbour -> !visitedNodes.contains(neighbour))
                     .forEach(neighbour -> {
-                        PathOptions oldPathOptions = pathMap.get(neighbour.getId());
-                        PathOptions newPathOptions = new PathOptions(oldPathOptions, maxWeight);
-
-                        closestPathOptions.getPaths().forEach(path -> newPathOptions.addPath(path.cloneWithNode(neighbour)));
-                        if (newPathOptions.getPaths().isEmpty()) {
-                            newPathOptions.addPath(new Path(neighbour));
+                        Path oldPathToNeighbour = pathMap.get(neighbour.getId());
+                        Path newPathToNeighbour = pathToClosest.cloneWithNode(neighbour);
+                        if (oldPathToNeighbour == null || newPathToNeighbour.compareTo(oldPathToNeighbour) < 0) {
+                            pathMap.put(neighbour.getId(), newPathToNeighbour);
                         }
-
-                        pathMap.put(neighbour.getId(), newPathOptions);
                         candidateNodes.add(neighbour);
                     });
             candidateNodes.remove(closestCandidate);
             visitedNodes.add(closestCandidate);
         }
 
-        return pathMap.get(exit.getId()).getRichest();
+        return pathMap.get(state.getExit().getId());
+    }
+
+    private Path enhancePath(Path basePath, int maxWeight) {
+        final int[] spareWeight = {maxWeight - basePath.getWeight()};
+        List<Node> basePathNodes = basePath.getPath();
+
+        for (int i = 0; i < basePathNodes.size(); i++) {
+            if (spareWeight[0] <= 0) {
+                return basePath;
+            }
+
+            Node nodeOnPath = basePathNodes.get(i);
+            int replaceAt = i;
+            nodeOnPath.getNeighbours().stream()
+                    .filter(neighbour -> !basePath.getPath().contains(neighbour))
+                    .forEach(neighbour -> {
+                        Path pathToNeighbourAndBack = new Path(List.of(nodeOnPath, neighbour, nodeOnPath));
+                        if (spareWeight[0] - pathToNeighbourAndBack.getWeight() >= 0) {
+                            basePath.replaceAtIndex(pathToNeighbourAndBack.getPath(), replaceAt);
+                            spareWeight[0] -= pathToNeighbourAndBack.getWeight();
+                        }
+                    });
+        }
+        return basePath;
     }
 
     private void pickUpGoldIfAny(EscapeState state) {

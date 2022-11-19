@@ -10,7 +10,7 @@ public class Path implements Comparable<Path> {
     private final List<Node> path;
 
     public Path(List<Node> path) {
-        this.path = path;
+        this.path = new ArrayList<>(path);
     }
 
     public Path(Node node) {
@@ -42,6 +42,11 @@ public class Path implements Comparable<Path> {
         Path pathCopy = new Path(new ArrayList<>(path));
         pathCopy.addNode(node);
         return pathCopy;
+    }
+
+    public void replaceAtIndex(List<Node> nodes, int index) {
+        path.remove(index);
+        path.addAll(index, nodes);
     }
 
     @Override
