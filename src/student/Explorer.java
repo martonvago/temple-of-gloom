@@ -3,6 +3,7 @@ package student;
 import game.*;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class Explorer {
     /**
@@ -85,6 +86,7 @@ public class Explorer {
         int oldSize = path.getSize();
         while (unusedBudget > 0) {
             path = enhancePath(path, maxWeight);
+            path = removeGoldlessLoops(path);
             if (oldSize >= path.getSize()) {
                 break;
             }
@@ -93,10 +95,43 @@ public class Explorer {
         }
 
         pickUpGoldIfAny(state);
-        path.getPath().stream().skip(1).forEach(node -> {
+        path.getNodes().stream().skip(1).forEach(node -> {
             state.moveTo(node);
             pickUpGoldIfAny(state);
         });
+    }
+
+    private Path removeGoldlessLoops(Path path) {
+        int smallestLoopSize = 3;
+        int largestLoopSize = path.getSize();
+        for (int size = smallestLoopSize; size <= largestLoopSize; size++) {
+            path = removeGoldlessLoopsOfSize(path, size);
+        }
+        return path;
+    }
+
+    private Path removeGoldlessLoopsOfSize(Path path, int size) {
+        List<Integer> indicesToRemove = findGoldlessLoopsOfSize(path, size);
+        Path trimmedPath = new Path();
+        for (int i = 0; i < path.getSize(); i++) {
+            if (!indicesToRemove.contains(i)) {
+                trimmedPath.addNode(path.getNode(i));
+            }
+        }
+
+        return trimmedPath;
+    }
+
+    private List<Integer> findGoldlessLoopsOfSize(Path path, int size) {
+        List<Integer> indices = new ArrayList<>();
+        int offset = size - 1;
+        for (int i = 0; i < path.getSize() - offset; i++) {
+            Path subpath = path.getSubpath(i, size);
+            if (subpath.isLoop() && subpath.getGold() == 0) {
+                IntStream.range(i, i + size - 1).forEach(indices::add);
+            }
+        }
+        return indices;
     }
 
     private Path findShortestPath(EscapeState state) {
@@ -130,19 +165,16 @@ public class Explorer {
     }
 
     private Path enhancePath(Path basePath, int maxWeight) {
-        List<Node> basePathNodes = basePath.getPath();
-        Set<Node> done = new HashSet<>(basePathNodes);
-        Path enhancedPath = new Path(new ArrayList<>());
+        Set<Node> visitedNodes = new HashSet<>(basePath.getNodes());
+        Path enhancedPath = new Path();
 
-        //deal with e = s
-
-        Stack<Integer> spareWeightsForNodes = getSpareWeightsForNodes(basePath, maxWeight);
+        Stack<Integer> budgets = getBudgetsForNodes(basePath, maxWeight);
         int leftoverBudget = 0;
-        for (int i = 0; i < basePathNodes.size() - 1; i++) {
-            Node nodeOnPath = basePathNodes.get(i);
+        for (int i = 0; i < basePath.getSize() - 1; i++) {
+            Node nodeOnPath = basePath.getNode(i);
 
-            Integer budget = spareWeightsForNodes.pop() + leftoverBudget;
-            Path enhancedPathForNode = enhanceNode(nodeOnPath, done, budget);
+            Integer budget = budgets.pop() + leftoverBudget;
+            Path enhancedPathForNode = enhanceNode(nodeOnPath, visitedNodes, budget);
             if (enhancedPathForNode.getGold() - nodeOnPath.getTile().getGold() > 0) {
                 leftoverBudget = budget - enhancedPathForNode.getWeight();
                 enhancedPath.joinPath(enhancedPathForNode);
@@ -151,25 +183,25 @@ public class Explorer {
                 leftoverBudget = budget;
             }
         }
-        enhancedPath.addNode(basePath.getPath().get(basePath.getPath().size()-1));
+        enhancedPath.addNode(basePath.getNode(basePath.getSize() - 1));
         return enhancedPath;
     }
 
-    private Path enhanceNode(Node node, Set<Node> done, Integer budget) {
+    private Path enhanceNode(Node node, Set<Node> visitedNodes, Integer budget) {
         Path nodeLoop = new Path(node);
         int i = 0;
-        while (i < nodeLoop.getPath().size()) {
-            Node current = nodeLoop.getPath().get(i);
+        while (i < nodeLoop.getSize()) {
+            Node current = nodeLoop.getNode(i);
 
             List<Node> neighbours = current.getNeighbours().stream()
-                    .filter(neighbour -> !done.contains(neighbour))
+                    .filter(neighbour -> !visitedNodes.contains(neighbour))
                     .toList();
 
             for (Node neighbour : neighbours) {
                 Path pathToNeighbourAndBack = new Path(List.of(current, neighbour, current));
                 if (budget - pathToNeighbourAndBack.getWeight() >= 0) {
-                    nodeLoop.replaceAtIndex(pathToNeighbourAndBack.getPath(), i);
-                    done.add(neighbour);
+                    nodeLoop.replaceAtIndex(pathToNeighbourAndBack.getNodes(), i);
+                    visitedNodes.add(neighbour);
                     budget -= pathToNeighbourAndBack.getWeight();
                 }
             }
@@ -178,16 +210,15 @@ public class Explorer {
         return nodeLoop;
     }
 
-    private Stack<Integer> getSpareWeightsForNodes(Path path, int maxWeight) {
+    private Stack<Integer> getBudgetsForNodes(Path path, int maxWeight) {
         Stack<Integer> weights = new Stack<>();
-        int nodeNumber = path.getPath().size() - 1;
+        int nodeNumberExcludingExit = path.getSize() - 1;
 
         int spareWeight = maxWeight - path.getWeight();
-        int allocated = spareWeight / nodeNumber;
-        int toAllocate = spareWeight % nodeNumber;
-        for (int i = 0; i < nodeNumber; i++) {
-            weights.push(i < toAllocate ? allocated + 1 : allocated);
-        }
+        int allocated = spareWeight / nodeNumberExcludingExit;
+        int toAllocate = spareWeight % nodeNumberExcludingExit;
+        IntStream.range(0, nodeNumberExcludingExit)
+                .forEach( i -> weights.push(i < toAllocate ? allocated + 1 : allocated));
         return weights;
     }
 
