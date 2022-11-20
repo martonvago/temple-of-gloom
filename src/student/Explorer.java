@@ -83,15 +83,15 @@ public class Explorer {
         Path path = findShortestPath(state);
 
         int unusedBudget = maxWeight - path.getWeight();
-        int oldSize = path.getSize();
+        Path oldPath = path;
         while (unusedBudget > 0) {
             path = enhancePath(path, maxWeight);
             path = removeGoldlessLoops(path);
-            if (oldSize >= path.getSize()) {
+            if (oldPath.equals(path)) {
                 break;
             }
             unusedBudget = maxWeight - path.getWeight();
-            oldSize = path.getSize();
+            oldPath = path;
         }
 
         pickUpGoldIfAny(state);

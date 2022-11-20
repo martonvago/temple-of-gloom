@@ -93,4 +93,26 @@ public class Path implements Comparable<Path> {
         }
         return this.getGold().compareTo(otherPath.getGold()) * -1;
     }
+
+    @Override
+    public boolean equals(Object ob) {
+        if (ob == this) {
+            return true;
+        }
+        if (!(ob instanceof Path otherPath)) {
+            return false;
+        }
+
+        if (otherPath.getSize() != getSize()) {
+            return false;
+        }
+
+        for (int i = 0; i < getSize(); i++) {
+            if (!getNode(i).equals(otherPath.getNode(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
