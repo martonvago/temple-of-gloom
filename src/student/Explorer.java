@@ -3,7 +3,6 @@ package student;
 import game.*;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class Explorer {
     /**
@@ -84,6 +83,8 @@ public class Explorer {
 
         int unusedBudget = maxWeight - path.getWeight();
         int oldSize = path.getSize();
+
+        // Enhance and trim the path until the budget is spent or the path stops growing
         while (unusedBudget > 0) {
             path.enhancePath(maxWeight);
             path.removeGoldlessLoops();
@@ -101,6 +102,12 @@ public class Explorer {
         });
     }
 
+    /**
+     * Find the shortest path from the starting node to the exit node using Dijkstra's algorithm.
+     *
+     * @param state the information available at the current state
+     * @return the shortest path
+     */
     private Path findShortestPath(EscapeState state) {
         Node start = state.getCurrentNode();
         Node exit = state.getExit();
@@ -131,6 +138,11 @@ public class Explorer {
         return pathMap.get(state.getExit().getId());
     }
 
+    /**
+     * Pick up gold from the current node if the node contains gold.
+     *
+     * @param state the information available at the current state
+     */
     private void pickUpGoldIfAny(EscapeState state) {
         if (state.getCurrentNode().getTile().getGold() > 0) {
             state.pickUpGold();
