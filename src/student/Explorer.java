@@ -1,10 +1,10 @@
 package student;
 
-import game.EscapeState;
-import game.ExplorationState;
+import game.*;
+
+import java.util.*;
 
 public class Explorer {
-
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
      * Once you find the orb, you must return from the function in order to pick
@@ -36,7 +36,22 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        //TODO : Explore the cavern and find the orb
+        Stack<Long> moves = new Stack<>();
+        List<Long> deadEnds = new ArrayList<>();
+
+        while (state.getDistanceToTarget() != 0) {
+            moves.push(state.getCurrentLocation());
+            Optional<NodeStatus> unexploredNeighbourClosestToOrb = state.getNeighbours()
+                    .stream()
+                    .filter(nodeStatus -> !moves.contains(nodeStatus.nodeID()) && !deadEnds.contains(nodeStatus.nodeID()))
+                    .min(Comparator.comparingInt(NodeStatus::distanceToTarget));
+            if (unexploredNeighbourClosestToOrb.isEmpty()) {
+                deadEnds.add(moves.pop());
+                state.moveTo(moves.pop());
+                continue;
+            }
+            state.moveTo(unexploredNeighbourClosestToOrb.get().nodeID());
+        }
     }
 
     /**
@@ -63,6 +78,74 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        //TODO: Escape from the cavern before time runs out
+        int maxWeight = state.getTimeRemaining();
+        Path path = findShortestPath(state);
+
+        int unusedBudget = maxWeight - path.getWeight();
+        int oldSize = path.getSize();
+
+        // Enhance and trim the path until the budget is spent or the path stops growing
+        while (unusedBudget > 0) {
+            path.enhancePath(maxWeight);
+            path.removeGoldlessLoops();
+            if (oldSize >= path.getSize()) {
+                break;
+            }
+            unusedBudget = maxWeight - path.getWeight();
+            oldSize = path.getSize();
+        }
+
+        pickUpGoldIfAny(state);
+        path.getNodes().stream().skip(1).forEach(node -> {
+            state.moveTo(node);
+            pickUpGoldIfAny(state);
+        });
+    }
+
+    /**
+     * Find the shortest path from the starting node to the exit node using Dijkstra's algorithm.
+     *
+     * @param state the information available at the current state
+     * @return the shortest path
+     */
+    private Path findShortestPath(EscapeState state) {
+        Node start = state.getCurrentNode();
+        Node exit = state.getExit();
+        Set<Node> visitedNodes = new HashSet<>();
+        Set<Node> candidateNodes = new HashSet<>();
+        Map<Long, Path> pathMap = new HashMap<>();
+
+        pathMap.put(start.getId(), new Path(start));
+        while (!visitedNodes.contains(exit)) {
+            Node closestCandidate = candidateNodes.stream()
+                    .min(Comparator.comparing((candidate-> pathMap.get(candidate.getId()))))
+                    .orElse(start);
+            Path pathToClosest = pathMap.get(closestCandidate.getId());
+            closestCandidate.getNeighbours().stream()
+                    .filter(neighbour -> !visitedNodes.contains(neighbour))
+                    .forEach(neighbour -> {
+                        Path oldPathToNeighbour = pathMap.get(neighbour.getId());
+                        Path newPathToNeighbour = pathToClosest.cloneWithNode(neighbour);
+                        if (oldPathToNeighbour == null || newPathToNeighbour.compareTo(oldPathToNeighbour) < 0) {
+                            pathMap.put(neighbour.getId(), newPathToNeighbour);
+                        }
+                        candidateNodes.add(neighbour);
+                    });
+            candidateNodes.remove(closestCandidate);
+            visitedNodes.add(closestCandidate);
+        }
+
+        return pathMap.get(state.getExit().getId());
+    }
+
+    /**
+     * Pick up gold from the current node if the node contains gold.
+     *
+     * @param state the information available at the current state
+     */
+    private void pickUpGoldIfAny(EscapeState state) {
+        if (state.getCurrentNode().getTile().getGold() > 0) {
+            state.pickUpGold();
+        }
     }
 }
