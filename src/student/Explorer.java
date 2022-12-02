@@ -44,7 +44,7 @@ public class Explorer {
             Optional<NodeStatus> unexploredNeighbourClosestToOrb = state.getNeighbours()
                     .stream()
                     .filter(nodeStatus -> !moves.contains(nodeStatus.nodeID()) && !deadEnds.contains(nodeStatus.nodeID()))
-                    .min(Comparator.comparingInt(NodeStatus::distanceToTarget));
+                    .min(Comparator.comparing(nodeStatus -> nodeStatus));
             if (unexploredNeighbourClosestToOrb.isEmpty()) {
                 deadEnds.add(moves.pop());
                 state.moveTo(moves.pop());
