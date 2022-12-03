@@ -36,22 +36,7 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        Stack<Long> moves = new Stack<>();
-        List<Long> deadEnds = new ArrayList<>();
-
-        while (state.getDistanceToTarget() != 0) {
-            moves.push(state.getCurrentLocation());
-            Optional<NodeStatus> unexploredNeighbourClosestToOrb = state.getNeighbours()
-                    .stream()
-                    .filter(nodeStatus -> !moves.contains(nodeStatus.nodeID()) && !deadEnds.contains(nodeStatus.nodeID()))
-                    .min(Comparator.comparingInt(NodeStatus::distanceToTarget));
-            if (unexploredNeighbourClosestToOrb.isEmpty()) {
-                deadEnds.add(moves.pop());
-                state.moveTo(moves.pop());
-                continue;
-            }
-            state.moveTo(unexploredNeighbourClosestToOrb.get().nodeID());
-        }
+        new ExploreAlgorithm(state).explore();
     }
 
     /**
@@ -115,37 +100,6 @@ public class Explorer {
 
 }
 
-class ExploreAlgorithm{
-
-    private final ExplorationState state;
-    private int weight;
-    private HashMap<Long, Integer> explored;
-
-    public ExploreAlgorithm(ExplorationState state){
-        this.state = state;
-        this.explored = new HashMap<>();
-        this.weight = 5;
-    }
-
-    public void explore(){
-
-        // Never return to the entrance tile
-        explored.put(state.getCurrentLocation(), Integer.MAX_VALUE);
-
-        while (state.getDistanceToTarget() != 0) {
-
-            explored.compute(state.getCurrentLocation(), (id, n) -> n == null ? effort : n + weight);
-
-            var neighbours = state.getNeighbours();
-            var nicest = neighbours.stream()
-                    .min(Comparator.comparingInt(n -> n.distanceToTarget() + explored.compute(n.nodeID(), (id, m) -> m == null ? 0 : m)));
-            state.moveTo(nicest.orElse(neighbours.stream().max(Comparator.comparingLong(n -> n.nodeID())).get()).nodeID());
-        }
-    }
-
-}
-
-
 class PathAlgorithm {
     private final Node start;
     private final Node exit;
@@ -176,7 +130,7 @@ class PathAlgorithm {
     public Path findShortestPathDijkstra() {
 
         pathMap.put(start.getId(), new Path(start));
-        while (!visitedNodes.contains(exit)) {
+        while (!visitedNodes.contains(exit)) { // TODO: Should not exist when it has the last node -- could be other path to last node that is shorter
 
             Node closestCandidate = GetClosestCandidate();
             pathToClosest = pathMap.get(closestCandidate.getId());
