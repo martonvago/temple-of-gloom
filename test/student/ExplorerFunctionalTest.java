@@ -27,8 +27,8 @@ public class ExplorerFunctionalTest {
     @Test
     void RunGameFromSerialisedLevelFile() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         GameState game = new GameState(
-                java.nio.file.Path.of("./test/resources/map_1/explore_s.txt"),
-                Path.of("./test/resources/map_1/escape_s.txt"));
+                Path.of("./test/resources/map_1/explore_s.txt"),
+                Path.of("./test/resources/map_1/escape_s.txt"), false);
 
         Method RunGame = game.getClass().getDeclaredMethod("run");
         RunGame.setAccessible(true);
@@ -47,7 +47,7 @@ public class ExplorerFunctionalTest {
     void UniformWeightTest() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         GameState map1Game = new GameState(
                 java.nio.file.Path.of("./test/resources/map_1/explore_s.txt"),
-                Path.of("./test/resources/map_1/escape_s.txt"));
+                Path.of("./test/resources/map_1/escape_s.txt"),false);
 
         Method runGameMap1 = map1Game.getClass().getDeclaredMethod("run");
         runGameMap1.setAccessible(true);
@@ -55,7 +55,7 @@ public class ExplorerFunctionalTest {
 
         GameState map2Game = new GameState(
                 java.nio.file.Path.of("./test/resources/map_2/explore_s.txt"),
-                Path.of("./test/resources/map_2/escape_s.txt"));
+                Path.of("./test/resources/map_2/escape_s.txt"),false);
 
         Method runGameMap2 = map2Game.getClass().getDeclaredMethod("run");
         runGameMap2.setAccessible(true);
@@ -63,7 +63,7 @@ public class ExplorerFunctionalTest {
 
         GameState map3Game = new GameState(
                 java.nio.file.Path.of("./test/resources/map_3/explore_s.txt"),
-                Path.of("./test/resources/map_3/escape_s.txt"));
+                Path.of("./test/resources/map_3/escape_s.txt"),false);
 
         Method runGameMap3 = map3Game.getClass().getDeclaredMethod("run");
         runGameMap3.setAccessible(true);
