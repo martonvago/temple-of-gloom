@@ -16,8 +16,8 @@ public class ExplorerFunctionalTest {
     @Test
     void runOnce() throws IOException {
         var rng = new Random();
-        rng.setSeed(25761623242424242L);
-        GameState.runNewGame(rng.nextInt(), false);
+        rng.setSeed(336249467);
+        GameState.runNewGame(rng.nextInt(), true);
     }
 
     /**
@@ -36,6 +36,16 @@ public class ExplorerFunctionalTest {
     }
 
     @Test
+    void RunGameExplore() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        GameState game = new GameState(
+                Path.of("./test/resources/nightmare/explore_s.txt"),
+                Path.of("./test/resources/map_1/escape_s.txt"), true);
+
+        Method RunGame = game.getClass().getDeclaredMethod("explore");
+        RunGame.setAccessible(true);
+        RunGame.invoke(game);
+    }
+
     /**
      Runs the game twice From a serialised level files.
      The first sets of levels have randomised edge weighting
@@ -44,10 +54,11 @@ public class ExplorerFunctionalTest {
 
      As the physical design and gold distribution is identical, assert that map 2 scores the highest, map 3 the lowest and map 1 in the middle
     */
+    @Test
     void UniformWeightTest() throws IOException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         GameState map1Game = new GameState(
                 java.nio.file.Path.of("./test/resources/map_1/explore_s.txt"),
-                Path.of("./test/resources/map_1/escape_s.txt"),false);
+                Path.of("./test/resources/map_1/escape_s.txt"),true);
 
         Method runGameMap1 = map1Game.getClass().getDeclaredMethod("run");
         runGameMap1.setAccessible(true);
