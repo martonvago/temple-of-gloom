@@ -117,10 +117,10 @@ public class Explorer {
 
         pathMap.put(start.getId(), new Path(start));
         while (!visitedNodes.contains(exit)) {
-            Node closestCandidate = candidateNodes.stream()
-                    .min(Comparator.comparing((candidate-> pathMap.get(candidate.getId()))))
-                    .orElse(start);
+
+            Node closestCandidate = this.GetClosestCandidate(candidateNodes, pathMap, start);
             Path pathToClosest = pathMap.get(closestCandidate.getId());
+
             closestCandidate.getNeighbours().stream()
                     .filter(neighbour -> !visitedNodes.contains(neighbour))
                     .forEach(neighbour -> {
@@ -131,11 +131,21 @@ public class Explorer {
                         }
                         candidateNodes.add(neighbour);
                     });
+
             candidateNodes.remove(closestCandidate);
+
             visitedNodes.add(closestCandidate);
         }
 
         return pathMap.get(state.getExit().getId());
+    }
+
+    private Node GetClosestCandidate(Set<Node> candidateNodes, Map<Long, Path> pathMap, Node start){
+
+        return candidateNodes.stream()
+                .min(Comparator.comparing((candidate-> pathMap.get(candidate.getId()))))
+                .orElse(start);
+
     }
 
     /**
