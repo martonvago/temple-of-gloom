@@ -4,7 +4,7 @@ import game.NodeStatus;
 import game.Pair;
 
 import java.util.*;
-import java.util.stream.Stream;
+
 
 public class ExploreGraph {
 
@@ -13,10 +13,12 @@ public class ExploreGraph {
     private final Set<Long> visited = new HashSet<>();
     private final Map<Long, Integer> distanceMap = new HashMap<>();
     private Pair<Long, Integer> closestUnexploredNode;
+    private Stack<Long> movesTaken = new Stack<>();
 
     public void logNodeVisit(long current, int distance, Collection<NodeStatus> neighbours) {
         visited.add(current);
         distanceMap.putIfAbsent(current, distance);
+        movesTaken.push(current);
 
         for (var n : neighbours) {
             seen(current, n.nodeID(), n.distanceToTarget());
@@ -50,6 +52,7 @@ public class ExploreGraph {
     public List<Pair<Long, Integer>> getUnexploredNeighbours(long current) {
         return getNeighbours(current).stream().filter((k) -> !visited.contains(k.first())).toList();
     }
+
     public boolean hasNotVisited(long id) {
         return !visited.contains(id);
     }
@@ -73,7 +76,21 @@ public class ExploreGraph {
         return new Pair<Long, Integer>(e.getKey(), e.getValue());
     }
 
-    public List<Long> pathToClosestUnexploredFrom(long current) {
+    public List<Long> pathToClosestUnexploredFrom(long current, long target) {
 
+        List<Long> Path = new ArrayList<>();
+        var path_complete = false;
+        movesTaken.pop();   // Pop the current tile
 
+        while (!path_complete) {
+            Long node = movesTaken.pop();
+            var neighbours = neighbourMap.get(node);
+
+            if (neighbours.contains(target)) {
+                path_complete = true;
+            }
+            Path.add(node);
+        }
+        return Path;
     }
+}

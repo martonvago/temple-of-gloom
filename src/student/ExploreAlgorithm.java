@@ -10,7 +10,6 @@ public class ExploreAlgorithm {
     private final ExploreGraph g = new ExploreGraph();
     private long moveTarget;
     private long currentLoc;
-    private int currentDist;
 
     public ExploreAlgorithm(ExplorationState state) {
         this.state = state;
@@ -19,7 +18,6 @@ public class ExploreAlgorithm {
     public void explore() {
         while (state.getDistanceToTarget() != 0) {
             currentLoc = state.getCurrentLocation();
-            currentDist = state.getDistanceToTarget();
             g.logNodeVisit(currentLoc, state.getDistanceToTarget(), state.getNeighbours());
             if (keepExploring()) {
                 state.moveTo(moveTarget);
@@ -30,12 +28,15 @@ public class ExploreAlgorithm {
     }
 
     private void moveToLastKnownGoodNode() {
-        // TODO: use some kind of path algorithm to move to the known good nodes
-        var path = g.pathToClosestUnexploredFrom(currentLoc);
+        var target = g.getClosestUnexploredNodeToGoal();
+        var path = g.pathToClosestUnexploredFrom(currentLoc, target.first());
         for (var tile : path) {
             state.moveTo(tile);
-            return;
         }
+        // Make sure to move to the unseen tile and log it
+        currentLoc = target.first();
+        state.moveTo(currentLoc);
+        g.logNodeVisit(currentLoc,state.getDistanceToTarget(), state.getNeighbours());
     }
 
     private boolean keepExploring() {
