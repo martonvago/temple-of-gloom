@@ -29,7 +29,6 @@ public class ExploreAlgorithm {
             if (this.KeepExploring(current)) {
                 // Distance benefit whatever calculation
                 state.moveTo(getClosestNeighbour(current));
-                continue;
             } else {
                 moveToLastKnownGoodNode(current);
             }
@@ -52,7 +51,7 @@ public class ExploreAlgorithm {
         // Current lowest unexplored distance
         var neighbours = g.GetNeighbours(current);
         for (var n : neighbours) {
-            if (!g.hasVisited(n)) {
+            if (g.hasNotVisited(n)) {
                 return true;
             }
         }
@@ -65,7 +64,7 @@ public class ExploreAlgorithm {
 
         // Create the local distance map
         for(var n: neighbours) {
-            if (!g.hasVisited(n)) {
+            if (g.hasNotVisited(n)) {
                 distanceMap.put(n, g.getDistance(n));
             }
         }
@@ -81,36 +80,39 @@ public class ExploreAlgorithm {
 
     }
 
-            // Fallback / giving up
-            // Pathfind to least distance unexplored node
-
-            // End of session TODO:
-            // Where we are at: We messed around with too many things we shouldn't have
-            // We need to finish the ExploreGraph and ExploreAlgorithm
-            // We were currently working on this function, and implementing ExploreGraph as we went along
-            //
-            // 1. Working on KeepExploring -- Need to move it over here, maybe cache GetNeighbours()? / calculate closest
-            // - Needs logic to determine if we should go back to a known close node or not
-            // Logic for getclosetneighbour
-
-            // After it's working again:
-
-            // Extract out PathAlgorithm
-            // Investigate usage of Node class (allowed or not?)
+}
 
 
+// Fallback / giving up
+// Pathfind to least distance unexplored node
 
-                      // Look at neighbours
-                      // -> Still unexplored
-                      // -> Closer -> Move to it
-                      // -> Further away -> ?
-                      // -> No unexplored tiles adjacent
-                      // -> Find lowest distance unexplored node in graph -> pathfind to it
+// End of session TODO:
+// Where we are at: We messed around with too many things we shouldn't have
+// We need to finish the ExploreGraph and ExploreAlgorithm
+// We were currently working on this function, and implementing ExploreGraph as we went along
+//
+// 1. Working on KeepExploring -- Need to move it over here, maybe cache GetNeighbours()? / calculate closest
+// - Needs logic to determine if we should go back to a known close node or not
+// Logic for getclosetneighbour
 
-                      // Update current node if dead end // obsolete?
+// After it's working again:
+
+// Extract out PathAlgorithm
+// Investigate usage of Node class (allowed or not?)
 
 
-                      // Perform move
+
+// Look at neighbours
+// -> Still unexplored
+// -> Closer -> Move to it
+// -> Further away -> ?
+// -> No unexplored tiles adjacent
+// -> Find lowest distance unexplored node in graph -> pathfind to it
+
+// Update current node if dead end // obsolete?
+
+
+// Perform move
 
 
 
@@ -129,7 +131,6 @@ public class ExploreAlgorithm {
 
 
 
-        }
 //        explored.computeIfPresent(state.getCurrentLocation(), (id, n) -> n + weight);
 //            explored.putIfAbsent(state.getCurrentLocation(), weight);
 ////            System.out.format("At %d - own weight %d - distance %d%n", state.getCurrentLocation(), explored.get(state.getCurrentLocation()), state.getDistanceToTarget());
@@ -141,6 +142,4 @@ public class ExploreAlgorithm {
 //        }
 //    }
 
-    }
 
-}

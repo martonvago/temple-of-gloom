@@ -30,8 +30,8 @@ public class ExploreGraph {
         return neighbourMap.get(current); // TODO: return distances as well
     }
 
-    public boolean hasVisited(long id) {
-        return visited.contains(id);
+    public boolean hasNotVisited(long id) {
+        return !visited.contains(id);
     }
 
     public int getDistance(long current){
