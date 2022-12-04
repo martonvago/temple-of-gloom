@@ -89,14 +89,13 @@ public class ExploreGraph {
 
         List<Long> Path = new ArrayList<>();
         var path_complete = false;
-        movesTaken.pop();   // Pop the current tile
 
         while (!path_complete) {
             Long node = movesTaken.pop();
             var neighbours = neighbourMap.get(node);
 
-            System.out.println("popping node: " + node);
-            System.out.println("neighbours of node: " + neighbours);
+//            System.out.println("popping node: " + node);
+//            System.out.println("neighbours of node: " + neighbours);
 
             if (neighbours.contains(target.first())) {
                 path_complete = true;

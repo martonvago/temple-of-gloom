@@ -30,6 +30,11 @@ public class ExploreAlgorithm {
         var path = g.pathToClosestUnexploredFrom();
         System.out.println("BackTrack path: " + path);
         for (var tile : path) {
+
+            if (tile == state.getCurrentLocation()){
+                continue;
+            }
+
             state.moveTo(tile);
             g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
         }
