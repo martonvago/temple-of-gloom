@@ -10,8 +10,9 @@ public class ExploreGraph {
     private Map<Long, Integer> distanceMap = new HashMap<>();
 
 
-    public void Visit(long current, int distance) {
+    public void logNodeVisit(long current, int distance) {
         visited.add(current);
+        distanceMap.putIfAbsent(current, distance);
     }
 
     public void Seen(long currentID, long nodeID, int distanceToTarget) {
@@ -29,22 +30,14 @@ public class ExploreGraph {
         return neighbourMap.get(current); // TODO: return distances as well
     }
 
-    // TODO: Move to exploreAlgo
-    public boolean KeepExploring(long current) {
-        // Return true if we should keep trying to find a path through the adjacent nodes to the current node
-        var currentDistance = distanceMap.get(current);
-
-        // Current lowest unexplored distance
-
-        var neighbours = GetNeighbours(current);
-        for (var n : neighbours) {
-            if (!visited.contains(n)) {
-
-                return true;
-            }
-        }
-        return false;
+    public boolean hasVisited(long id) {
+        return visited.contains(id);
     }
+
+    public int getDistance(long current){
+        return distanceMap.get(current);
+    }
+
     /**
      * Finds a NodeID that has the lowest distance that's unvisted
      * @return Long
@@ -56,5 +49,4 @@ public class ExploreGraph {
                 .findFirst()
                 .get().getKey();
     }
-
 }

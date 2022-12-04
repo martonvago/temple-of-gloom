@@ -1,9 +1,6 @@
 package student;
 
 import game.ExplorationState;
-import game.Node;
-import game.NodeStatus;
-import game.Pair;
 
 import java.util.*;
 
@@ -19,24 +16,70 @@ public class ExploreAlgorithm {
     public void explore() {
         // graph:
         // - nodes, their distance (NodeStatus) + Is it explored? (true if explored(n) > 0)
-        g.SetDistance(state.getCurrentLocation(), state.getDistanceToTarget());
+        g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget());
 
         while (state.getDistanceToTarget() != 0) {
             var current = state.getCurrentLocation();
-            var dist = state.getDistanceToTarget();
-            g.Visit(current, dist);
+            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget());
 
             for (var n : state.getNeighbours()) {
                 g.Seen(current, n.nodeID(), n.distanceToTarget());
             }
 
-            if (g.KeepExploring(current)) {
+            if (this.KeepExploring(current)) {
                 // Distance benefit whatever calculation
-                state.moveTo(g.GetClosestNeighbour(current));
-
+                state.moveTo(getClosestNeighbour(current));
                 continue;
+            } else {
+                moveToLastKnownGoodNode(current);
             }
+        }
+    }
 
+    private void moveToLastKnownGoodNode(long current) {
+        // TODO: use some kind of path algorithm to move to the known good nodes
+
+    }
+
+    private boolean KeepExploring(long current) {
+        // Return true if we should keep trying to find a path through the adjacent nodes to the current node
+
+        // TODO: We should also track the lowest distance we have visited and if it goes higher than a threshold
+        //  Return False
+
+        var currentDistance = g.getDistance(current);
+
+        // Current lowest unexplored distance
+        var neighbours = g.GetNeighbours(current);
+        for (var n : neighbours) {
+            if (!g.hasVisited(n)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private long getClosestNeighbour(long current) {
+        var neighbours = g.GetNeighbours(current);
+        Map<Long, Integer> distanceMap = new HashMap<>();
+
+        // Create the local distance map
+        for(var n: neighbours) {
+            if (!g.hasVisited(n)) {
+                distanceMap.put(n, g.getDistance(n));
+            }
+        }
+
+        // sort the distance map
+        ArrayList<Map.Entry<Long, Integer>> sortedlist = new ArrayList<>(distanceMap.entrySet());
+        sortedlist.sort(Map.Entry.comparingByValue());
+
+        // Select entry with the lowest distance to orb
+        return sortedlist.get(sortedlist.size() -1).getKey();
+
+        // TODO: Check for entries with same distance, if present select one with the highest ID
+
+    }
 
             // Fallback / giving up
             // Pathfind to least distance unexplored node
