@@ -74,58 +74,6 @@ public class ExploreGraph {
     }
 
     public List<Long> pathToClosestUnexploredFrom(long current) {
-        var end = getClosestUnexploredNodeToGoal().first();
-        Set<Long> been = new HashSet<>();
-        List<List<Long>> paths = new ArrayList<>();
-        var added = true;
 
-        while (added) {
-            added = false;
-            var tmp = new ArrayList<>();
-
-            for (var path : paths) {
-                var neighbours = getNeighbours(path.get(path.size()-1));
-                for (var n : neighbours) {
-                    long nId = n.first();
-                    if (been.contains(nId)) continue;
-                    been.add(nId);
-                    added = true;
-
-                    List<Long> newPath = Stream.concat(path.stream(), Stream.of(nId)).toList();
-                    if (nId == end) {
-                        return newPath;
-                    }
-                    tmp.add(newPath);
-                }
-            }
-        }
-        return null;
-        // we have node X
-        // if a neighbour is end -> return path
-        // for each neighbour
-        // repeat
-
-//        while
-//
-//
-//
-//
-//        var current = start;
-//        var neighbours = getNeighbours(current);
 
     }
-
-}
-// 1  procedure BFS(G, root) is
-//         2      let Q be a queue
-//         3      label root as explored
-//         4      Q.enqueue(root)
-//         5      while Q is not empty do
-//         6          v := Q.dequeue()
-//         7          if v is the goal then
-//         8              return v
-//         9          for all edges from v to w in G.adjacentEdges(v) do
-//         10              if w is not labeled as explored then
-//         11                  label w as explored
-//         12                  w.parent := v
-//         13                  Q.enqueue(w)
