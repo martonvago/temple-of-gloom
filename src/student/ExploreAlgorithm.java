@@ -2,84 +2,59 @@ package student;
 
 import game.ExplorationState;
 
-import java.util.*;
-
 public class ExploreAlgorithm {
+
+    private static final Integer TURNAROUND_THRESHOLD = 6;
 
     private final ExplorationState state;
     private final ExploreGraph g = new ExploreGraph();
+    private long moveTarget;
+    private long currentLoc;
+    private int currentDist;
 
     public ExploreAlgorithm(ExplorationState state) {
         this.state = state;
     }
 
     public void explore() {
-        // graph:
-        // - nodes, their distance (NodeStatus) + Is it explored? (true if explored(n) > 0)
-        g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget());
-
         while (state.getDistanceToTarget() != 0) {
-            var current = state.getCurrentLocation();
-            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget());
-
-            for (var n : state.getNeighbours()) {
-                g.Seen(current, n.nodeID(), n.distanceToTarget());
-            }
-
-            if (this.KeepExploring(current)) {
-                // Distance benefit whatever calculation
-                state.moveTo(getClosestNeighbour(current));
+            currentLoc = state.getCurrentLocation();
+            currentDist = state.getDistanceToTarget();
+            g.logNodeVisit(currentLoc, state.getDistanceToTarget(), state.getNeighbours());
+            if (keepExploring()) {
+                state.moveTo(moveTarget);
             } else {
-                moveToLastKnownGoodNode(current);
+                moveToLastKnownGoodNode();
             }
         }
     }
 
-    private void moveToLastKnownGoodNode(long current) {
+    private void moveToLastKnownGoodNode() {
         // TODO: use some kind of path algorithm to move to the known good nodes
-
+        var path = g.pathToClosestUnexploredFrom(currentLoc);
+        for (var tile : path) {
+            state.moveTo(tile);
+            return;
+        }
     }
 
-    private boolean KeepExploring(long current) {
+    private boolean keepExploring() {
         // Return true if we should keep trying to find a path through the adjacent nodes to the current node
 
-        // TODO: We should also track the lowest distance we have visited and if it goes higher than a threshold
-        //  Return False
-
-        var currentDistance = g.getDistance(current);
-
-        // Current lowest unexplored distance
-        var neighbours = g.GetNeighbours(current);
-        for (var n : neighbours) {
-            if (g.hasNotVisited(n)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private long getClosestNeighbour(long current) {
-        var neighbours = g.GetNeighbours(current);
-        Map<Long, Integer> distanceMap = new HashMap<>();
-
-        // Create the local distance map
-        for(var n: neighbours) {
-            if (g.hasNotVisited(n)) {
-                distanceMap.put(n, g.getDistance(n));
-            }
+        var neighbours = g.getUnexploredNeighbours(currentLoc);
+        if (neighbours.isEmpty()) {
+            return false;
         }
 
-        // sort the distance map
-        ArrayList<Map.Entry<Long, Integer>> sortedlist = new ArrayList<>(distanceMap.entrySet());
-        sortedlist.sort(Map.Entry.comparingByValue());
+        var target = neighbours.get(0);
+        var closest = g.getClosestUnexploredNodeToGoal();
+        if (target.second() > closest.second() + TURNAROUND_THRESHOLD) {
+            return false;
+        }
 
-        // Select entry with the lowest distance to orb
-        return sortedlist.get(sortedlist.size() -1).getKey();
-
-        // TODO: Check for entries with same distance, if present select one with the highest ID
-
+        moveTarget = target.first();
+        return true;
     }
-
 }
 
 
