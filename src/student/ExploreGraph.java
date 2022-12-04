@@ -16,6 +16,12 @@ public class ExploreGraph {
     private Stack<Long> movesTaken = new Stack<>();
 
     public void logNodeVisit(long current, int distance, Collection<NodeStatus> neighbours) {
+        if (!movesTaken.empty()) {
+            if (movesTaken.peek() == current) {
+                System.out.println("WARING: double log");
+                return;
+            }
+        }
         visited.add(current);
         distanceMap.putIfAbsent(current, distance);
         movesTaken.push(current);
@@ -23,6 +29,7 @@ public class ExploreGraph {
         for (var n : neighbours) {
             seen(current, n.nodeID(), n.distanceToTarget());
         }
+        System.out.println("vistited " + current);
     }
 
     private void seen(long currentID, long nodeID, int distanceToTarget) {
@@ -76,7 +83,9 @@ public class ExploreGraph {
         return new Pair<Long, Integer>(e.getKey(), e.getValue());
     }
 
-    public List<Long> pathToClosestUnexploredFrom(long current, long target) {
+    public List<Long> pathToClosestUnexploredFrom() {
+        var target = getClosestUnexploredNodeToGoal();
+        System.out.println("target: " + target.first());
 
         List<Long> Path = new ArrayList<>();
         var path_complete = false;
@@ -86,7 +95,10 @@ public class ExploreGraph {
             Long node = movesTaken.pop();
             var neighbours = neighbourMap.get(node);
 
-            if (neighbours.contains(target)) {
+            System.out.println("popping node: " + node);
+            System.out.println("neighbours of node: " + neighbours);
+
+            if (neighbours.contains(target.first())) {
                 path_complete = true;
             }
             Path.add(node);

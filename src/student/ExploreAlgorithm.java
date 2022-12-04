@@ -9,7 +9,6 @@ public class ExploreAlgorithm {
     private final ExplorationState state;
     private final ExploreGraph g = new ExploreGraph();
     private long moveTarget;
-    private long currentLoc;
 
     public ExploreAlgorithm(ExplorationState state) {
         this.state = state;
@@ -17,8 +16,7 @@ public class ExploreAlgorithm {
 
     public void explore() {
         while (state.getDistanceToTarget() != 0) {
-            currentLoc = state.getCurrentLocation();
-            g.logNodeVisit(currentLoc, state.getDistanceToTarget(), state.getNeighbours());
+            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
             if (keepExploring()) {
                 state.moveTo(moveTarget);
             } else {
@@ -28,21 +26,20 @@ public class ExploreAlgorithm {
     }
 
     private void moveToLastKnownGoodNode() {
-        var target = g.getClosestUnexploredNodeToGoal();
-        var path = g.pathToClosestUnexploredFrom(currentLoc, target.first());
+
+        var path = g.pathToClosestUnexploredFrom();
+        System.out.println("BackTrack path: " + path);
         for (var tile : path) {
             state.moveTo(tile);
+            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
         }
         // Make sure to move to the unseen tile and log it
-        currentLoc = target.first();
-        state.moveTo(currentLoc);
-        g.logNodeVisit(currentLoc,state.getDistanceToTarget(), state.getNeighbours());
     }
 
     private boolean keepExploring() {
         // Return true if we should keep trying to find a path through the adjacent nodes to the current node
 
-        var neighbours = g.getUnexploredNeighbours(currentLoc);
+        var neighbours = g.getUnexploredNeighbours(state.getCurrentLocation());
         if (neighbours.isEmpty()) {
             return false;
         }
