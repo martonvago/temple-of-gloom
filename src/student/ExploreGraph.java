@@ -100,6 +100,8 @@ public class ExploreGraph {
             node = node.bfs_previous();
         }
         Collections.reverse(route);
+        // Remove first element as that the current node we are on
+        route.remove(0);
         reset_bfs();
         return route;
     }

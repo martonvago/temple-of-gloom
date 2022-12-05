@@ -34,14 +34,11 @@ public class ExploreAlgorithm {
         var path = g.ShortestPathTo(state.getCurrentLocation(), closest.getNodeID());
         System.out.println("path back " + path);
         for (var node : path){
-            if (state.getCurrentLocation() != node.getNodeID()){
+            state.moveTo(node.getNodeID());
+            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours() );
 
-                state.moveTo(node.getNodeID());
-                g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours() );
-            }
         }
 
-        System.out.println();
 
 
     }
