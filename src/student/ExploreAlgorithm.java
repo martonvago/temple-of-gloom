@@ -1,5 +1,6 @@
 package student;
 
+import com.sun.jdi.event.BreakpointEvent;
 import game.ExplorationState;
 
 public class ExploreAlgorithm {
@@ -8,7 +9,6 @@ public class ExploreAlgorithm {
 
     private final ExplorationState state;
     private final ExploreGraph g = new ExploreGraph();
-    private long moveTarget;
 
     public ExploreAlgorithm(ExplorationState state) {
         this.state = state;
@@ -18,7 +18,8 @@ public class ExploreAlgorithm {
         while (state.getDistanceToTarget() != 0) {
             g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
             if (keepExploring()) {
-                state.moveTo(moveTarget);
+                var nextMove = g.getUnexploredNeighbours(state.getCurrentLocation()).get(0).getNodeID();
+                state.moveTo(nextMove);
             } else {
                 moveToLastKnownGoodNode();
             }
@@ -27,18 +28,22 @@ public class ExploreAlgorithm {
 
     private void moveToLastKnownGoodNode() {
 
-        var path = g.pathToClosestUnexploredFrom();
-        System.out.println("BackTrack path: " + path);
-        for (var tile : path) {
-
-            if (tile == state.getCurrentLocation()){
-                continue;
-            }
-
-            state.moveTo(tile);
-            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
-        }
+        System.out.println("moving back");
         // Make sure to move to the unseen tile and log it
+        var closest = g.getClosestUnexploredNodeToGoal();
+        var path = g.ShortestPathTo(state.getCurrentLocation(), closest.getNodeID());
+        System.out.println("path back " + path);
+        for (var node : path){
+            if (state.getCurrentLocation() != node.getNodeID()){
+
+                state.moveTo(node.getNodeID());
+                g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours() );
+            }
+        }
+
+        System.out.println();
+
+
     }
 
     private boolean keepExploring() {
@@ -51,12 +56,7 @@ public class ExploreAlgorithm {
 
         var target = neighbours.get(0);
         var closest = g.getClosestUnexploredNodeToGoal();
-        if (target.second() > closest.second() + TURNAROUND_THRESHOLD) {
-            return false;
-        }
-
-        moveTarget = target.first();
-        return true;
+        return target.getDistanceToTarget() <= closest.getDistanceToTarget() + TURNAROUND_THRESHOLD;
     }
 }
 
