@@ -70,22 +70,30 @@ public class ExploreGraph {
 
         Queue<exploreNode> queue = new LinkedList<>();
         queue.add(nodeMap.get(start));
-        nodeMap.get(start).visitedBFS();
-        var end = nodeMap.get(target);
+        var startNode =  nodeMap.get(start);
+        var endNode = nodeMap.get(target);
+
+        Map<exploreNode, Boolean> bfsVisited = new HashMap<>();
+        Map<exploreNode, exploreNode> bfsPrevious = new HashMap<>();
+
+        // null is a sentinel value
+        bfsVisited.put(startNode, true);
+        bfsPrevious.put(startNode, null);
+
 
         while(!queue.isEmpty()){
             //pop a node from queue for search operation
             var current_node = queue.poll();
             //Loop through neighbors node to find the 'end'
             for(var node: current_node.getNeighbours()){
-                if(!node.is_visitedBFS()){
+                if(!bfsVisited.containsKey(node)){
                     //Visit and add the node to the queue
-                    node.visitedBFS();
+                    bfsVisited.put(node, true);
                     queue.add(node);
                     //update its precedings nodes
-                    node.previousBFS(current_node);
+                    bfsPrevious.put(node, current_node);
                     //If reached the end node then stop BFS
-                    if(node==end){
+                    if(node==endNode){
                         queue.clear();
                         break;
                     }
@@ -94,22 +102,21 @@ public class ExploreGraph {
         }
 
         List<exploreNode> route = new ArrayList<>();
-        var node = end;
+        var node = endNode;
         while(node != null){
-            route.add(node);
-            node = node.bfs_previous();
+            var previous = bfsPrevious.get(node);
+
+            if (previous == null){
+                break;
+            }
+
+            route.add(previous);
+            node = previous;
         }
         Collections.reverse(route);
         // Remove first element as that the current node we are on
         route.remove(0);
-        reset_bfs();
         return route;
-    }
-
-    private void reset_bfs(){
-        for (var n : nodeMap.entrySet()){
-            n.getValue().resetBfs();
-        }
     }
 
 
@@ -135,9 +142,6 @@ class exploreNode implements Comparable<exploreNode>{
     private final int distanceToTarget;
     private boolean visited;
     private final long nodeID;
-
-    private boolean bfs_visited = false;
-    private exploreNode bfs_previous = null;
 
 
     @Override
@@ -170,23 +174,6 @@ class exploreNode implements Comparable<exploreNode>{
 
     }
 
-    public void visitedBFS(){
-        bfs_visited = true;
-    }
-
-    public boolean is_visitedBFS(){
-        return bfs_visited;
-    }
-
-    public void previousBFS(exploreNode node) {
-        bfs_previous = node;
-    }
-
-    public void resetBfs(){
-        bfs_visited = false;
-        bfs_previous = null;
-    }
-
     public void setVisited(){
         visited = true;
     }
@@ -216,9 +203,5 @@ class exploreNode implements Comparable<exploreNode>{
         return "exploreNode{" +
                 "nodeID=" + nodeID +
                 '}';
-    }
-
-    public exploreNode bfs_previous() {
-        return bfs_previous;
     }
 }
