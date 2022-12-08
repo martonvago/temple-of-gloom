@@ -35,7 +35,7 @@ public class GameState implements ExplorationState, EscapeState {
     private boolean exploreErrored = false;
     private boolean escapeErrored = false;
 
-    public GameState(Path exploreCavernPath, Path escapeCavernPath) throws IOException {
+    public GameState(Path exploreCavernPath, Path escapeCavernPath, boolean useGui) throws IOException {
         exploreCavern = Cavern.deserialize(Files.readAllLines(exploreCavernPath));
         minTimeToExplore = exploreCavern.minPathLengthToTarget(exploreCavern.getEntrance());
         escapeCavern = Cavern.deserialize(Files.readAllLines(escapeCavernPath));
@@ -50,7 +50,11 @@ public class GameState implements ExplorationState, EscapeState {
         seed = -1;
 
         stage = Stage.EXPLORE;
-        gui = Optional.of(new GUI(exploreCavern, position.getTile().getRow(), position.getTile().getColumn(), 0));
+        if (useGui) {
+            gui =   Optional.of(new GUI(exploreCavern, position.getTile().getRow(), position.getTile().getColumn(), 0));
+        } else {
+            gui = Optional.empty();
+        }
     }
 
     /**

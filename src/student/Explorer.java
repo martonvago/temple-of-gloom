@@ -1,8 +1,7 @@
 package student;
 
-import game.*;
-
-import java.util.*;
+import game.EscapeState;
+import game.ExplorationState;
 
 public class Explorer {
     /**
@@ -36,22 +35,7 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        Stack<Long> moves = new Stack<>();
-        List<Long> deadEnds = new ArrayList<>();
-
-        while (state.getDistanceToTarget() != 0) {
-            moves.push(state.getCurrentLocation());
-            Optional<NodeStatus> unexploredNeighbourClosestToOrb = state.getNeighbours()
-                    .stream()
-                    .filter(nodeStatus -> !moves.contains(nodeStatus.nodeID()) && !deadEnds.contains(nodeStatus.nodeID()))
-                    .min(Comparator.comparingInt(NodeStatus::distanceToTarget));
-            if (unexploredNeighbourClosestToOrb.isEmpty()) {
-                deadEnds.add(moves.pop());
-                state.moveTo(moves.pop());
-                continue;
-            }
-            state.moveTo(unexploredNeighbourClosestToOrb.get().nodeID());
-        }
+        new ExploreAlgorithm(state).explore();
     }
 
     /**
@@ -79,7 +63,7 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         int maxWeight = state.getTimeRemaining();
-        Path path = findShortestPath(state);
+        Path path = new PathAlgorithm(state).findShortestPathDijkstra();
 
         int unusedBudget = maxWeight - path.getWeight();
         int oldSize = path.getSize();
@@ -103,42 +87,6 @@ public class Explorer {
     }
 
     /**
-     * Find the shortest path from the starting node to the exit node using Dijkstra's algorithm.
-     *
-     * @param state the information available at the current state
-     * @return the shortest path
-     */
-    private Path findShortestPath(EscapeState state) {
-        Node start = state.getCurrentNode();
-        Node exit = state.getExit();
-        Set<Node> visitedNodes = new HashSet<>();
-        Set<Node> candidateNodes = new HashSet<>();
-        Map<Long, Path> pathMap = new HashMap<>();
-
-        pathMap.put(start.getId(), new Path(start));
-        while (!visitedNodes.contains(exit)) {
-            Node closestCandidate = candidateNodes.stream()
-                    .min(Comparator.comparing((candidate-> pathMap.get(candidate.getId()))))
-                    .orElse(start);
-            Path pathToClosest = pathMap.get(closestCandidate.getId());
-            closestCandidate.getNeighbours().stream()
-                    .filter(neighbour -> !visitedNodes.contains(neighbour))
-                    .forEach(neighbour -> {
-                        Path oldPathToNeighbour = pathMap.get(neighbour.getId());
-                        Path newPathToNeighbour = pathToClosest.cloneWithNode(neighbour);
-                        if (oldPathToNeighbour == null || newPathToNeighbour.compareTo(oldPathToNeighbour) < 0) {
-                            pathMap.put(neighbour.getId(), newPathToNeighbour);
-                        }
-                        candidateNodes.add(neighbour);
-                    });
-            candidateNodes.remove(closestCandidate);
-            visitedNodes.add(closestCandidate);
-        }
-
-        return pathMap.get(state.getExit().getId());
-    }
-
-    /**
      * Pick up gold from the current node if the node contains gold.
      *
      * @param state the information available at the current state
@@ -148,4 +96,6 @@ public class Explorer {
             state.pickUpGold();
         }
     }
+
 }
+

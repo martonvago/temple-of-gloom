@@ -25,7 +25,7 @@ public class ExplorerTest {
     //}
 
     @Test
-    void test_explore() {
+    void test_game_performance() {
         final PrintStream stdout = System.out;
         final PrintStream stderr = System.err;
 
@@ -88,4 +88,7 @@ public class ExplorerTest {
         System.out.println("Average Score     : " + (scores.stream().reduce(Integer::sum).orElse(0) / numRuns));
 
     }
+
+
+
 }
