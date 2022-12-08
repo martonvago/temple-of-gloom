@@ -3,6 +3,7 @@ package student;
 import game.NodeStatus;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class ExploreGraph {
@@ -34,7 +35,6 @@ public class ExploreGraph {
             // Only create new nodes if they have not been seen before
             if (!nodeMap.containsKey(neighbour.nodeID())){
 
-//                System.out.println("Creating neighbour " + neighbour.nodeID());
                 var neighbour_node =new exploreNode( neighbour.nodeID(), neighbour.distanceToTarget(), false);
                 // Add parent node
                 neighbour_node.AddNeighbour(parent);
@@ -51,22 +51,17 @@ public class ExploreGraph {
         var neighbours = nodeMap.get(current).getNeighbours();
         List<exploreNode> UnexploredNeighbours = new ArrayList<>();
 
-//        System.out.println("all neighbours " + neighbours);
-
         for(var neighbour : neighbours){
             if (!neighbour.getVisited()){
                 UnexploredNeighbours.add(neighbour);
             }
-//            else {
-//                System.out.println("binning " + neighbour);
-//            }
         }
 
         Collections.sort(UnexploredNeighbours);
         return UnexploredNeighbours;
     }
 
-    List<exploreNode> ShortestPathTo(long start, long target){
+    private List<exploreNode> shortestPathTo(long start, long target){
 
         Queue<exploreNode> queue = new LinkedList<>();
         queue.add(nodeMap.get(start));
@@ -119,6 +114,52 @@ public class ExploreGraph {
         return route;
     }
 
+    public List<exploreNode> getPathToBestNode(long current){
+
+        // Get sorted list of unseen nodes
+        // Select all nodes that have are withing range of n + threshold, where n is the lowest distance
+        // select the one is the shortest distance to where the explorer is
+
+        var list = new ArrayList<>(seen.stream().toList());
+
+        if (list.isEmpty()){
+            System.err.println("maze is un-solvable");
+            return new ArrayList<>();
+        }
+
+        Collections.sort(list);
+        int distanceThreshold = 1;
+        var closestNodeDistance = list.get(0).getDistanceToTarget() + distanceThreshold;
+
+        var thresholdList = list.stream()
+                .filter(n -> n.getDistanceToTarget() < closestNodeDistance)
+                .collect(Collectors.toList());
+
+        if (thresholdList.size() == 1) {
+            return shortestPathTo(current, thresholdList.get(0).getNodeID());
+        }
+
+        exploreNode bestCandidate = null;
+        int CandidateDistance = 0;
+        for (var candidate : thresholdList){
+            var path = shortestPathTo(current, candidate.getNodeID());
+
+            if (bestCandidate == null){
+                bestCandidate = candidate;
+                CandidateDistance = path.size();
+
+            } else {
+                if(CandidateDistance > path.size()) {
+                bestCandidate = candidate;
+                CandidateDistance = path.size();
+             }
+            }
+        }
+
+        assert bestCandidate != null;
+        return shortestPathTo(current, bestCandidate.getNodeID());
+    }
+
 
 
     /**
@@ -146,24 +187,8 @@ class exploreNode implements Comparable<exploreNode>{
 
     @Override
     public int compareTo(exploreNode n2){
-
         // if distances are the same pick the one with the highest node id
-        if (this.getDistanceToTarget() == n2.getDistanceToTarget()){
-
-            if (this.getNodeID() > n2.getNodeID()){
-                return 1;
-            } else {
-                return -1;
-            }
-        } else {
-            if (this.getDistanceToTarget() > n2.getDistanceToTarget()){
-                return 1;
-            } else {
-                return -1;
-            }
-
-        }
-
+        return Integer.compare(this.getDistanceToTarget(), n2.getDistanceToTarget());
     }
 
     public exploreNode( long id, int distance, boolean seen){
@@ -205,3 +230,5 @@ class exploreNode implements Comparable<exploreNode>{
                 '}';
     }
 }
+
+//-s -8565390209477936194

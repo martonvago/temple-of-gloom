@@ -1,11 +1,10 @@
 package student;
 
-import com.sun.jdi.event.BreakpointEvent;
 import game.ExplorationState;
 
 public class ExploreAlgorithm {
 
-    private static final Integer TURNAROUND_THRESHOLD = 6;
+    private static final Integer TURNAROUND_THRESHOLD = 4;
 
     private final ExplorationState state;
     private final ExploreGraph g = new ExploreGraph();
@@ -30,17 +29,13 @@ public class ExploreAlgorithm {
 
         System.out.println("moving back");
         // Make sure to move to the unseen tile and log it
-        var closest = g.getClosestUnexploredNodeToGoal();
-        var path = g.ShortestPathTo(state.getCurrentLocation(), closest.getNodeID());
+        var path = g.getPathToBestNode(state.getCurrentLocation());
         System.out.println("path back " + path);
-        for (var node : path){
+        for (var node : path) {
             state.moveTo(node.getNodeID());
-            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours() );
+            g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
 
         }
-
-
-
     }
 
     private boolean keepExploring() {
