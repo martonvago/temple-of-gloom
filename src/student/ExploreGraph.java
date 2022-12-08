@@ -120,6 +120,10 @@ public class ExploreGraph {
 
         int distanceThreshold = 1;
 
+        // Potential idea to be more clever
+        // First select best node within a radius of the explorer
+        // If all nodes are exhausted than switch to current function.
+
         // Get sorted list of unseen nodes
         var unseenNodes =  nodeMap.entrySet()
                 .stream()

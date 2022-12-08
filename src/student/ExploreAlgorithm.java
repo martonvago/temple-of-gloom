@@ -4,6 +4,11 @@ import game.ExplorationState;
 
 public class ExploreAlgorithm {
 
+
+    // Potential to be cleverer
+    // use the distance to goal to estimate the size of the map
+    // Dynamically change the turn around threshold depending on size of map and distance to goal
+
     private static final Integer TURNAROUND_THRESHOLD = 4;
 
     private final ExplorationState state;
