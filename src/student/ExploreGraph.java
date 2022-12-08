@@ -1,21 +1,18 @@
 package student;
 
 import game.NodeStatus;
+import game.Pair;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 
 public class ExploreGraph {
-
     private final Map<Long, exploreNode> nodeMap = new HashMap<>();
-    // Tracks the nodes we've visited to deprioritize traversing them
-    private final Set<exploreNode> seen = new HashSet<>();
-
 
     public void logNodeVisit(long current, int distance, Collection<NodeStatus> neighbours) {
 
-        System.out.println("visiting node " + current);
+        System.out.println("visiting node " + current + " distance " + distance);
 
         if (!nodeMap.containsKey(current)){
             // First time visiting a node
@@ -24,9 +21,7 @@ public class ExploreGraph {
         } else {
             // visiting a node that is already present
             var current_node = nodeMap.get(current);
-            // Remove from the seen set
-            seen.remove(current_node);
-            current_node.setVisited();
+            current_node.Visit();
         }
 
         var parent = nodeMap.get(current);
@@ -39,7 +34,6 @@ public class ExploreGraph {
                 // Add parent node
                 neighbour_node.AddNeighbour(parent);
                 nodeMap.put(neighbour.nodeID(), neighbour_node);
-                seen.add(neighbour_node);
             }
             // since the underlying data structure is a set we don't need to worry.
             parent.AddNeighbour(nodeMap.get(neighbour.nodeID()));
@@ -48,17 +42,11 @@ public class ExploreGraph {
     }
 
     public List<exploreNode> getUnexploredNeighbours(long current) {
-        var neighbours = nodeMap.get(current).getNeighbours();
-        List<exploreNode> UnexploredNeighbours = new ArrayList<>();
 
-        for(var neighbour : neighbours){
-            if (!neighbour.getVisited()){
-                UnexploredNeighbours.add(neighbour);
-            }
-        }
-
-        Collections.sort(UnexploredNeighbours);
-        return UnexploredNeighbours;
+        return nodeMap.get(current).getNeighbours().stream()
+                .filter(Predicate.not(exploreNode::Visited))
+                .sorted()
+                .toList();
     }
 
     private List<exploreNode> shortestPathTo(long start, long target){
@@ -74,7 +62,6 @@ public class ExploreGraph {
         // null is a sentinel value
         bfsVisited.put(startNode, true);
         bfsPrevious.put(startNode, null);
-
 
         while(!queue.isEmpty()){
             //pop a node from queue for search operation
@@ -95,6 +82,15 @@ public class ExploreGraph {
                 }
             }
         }
+        return convertToPath(bfsPrevious, endNode);
+    }
+
+    /**
+     * @param bfsPrevious a map representing a linked list like structure of nodes
+     * @param endNode a sentinel node indicating that the path is complete
+     * @return a list of Explorer nodes that represent a path
+     */
+    private List<exploreNode> convertToPath(Map<exploreNode, exploreNode> bfsPrevious, exploreNode endNode){
 
         List<exploreNode> route = new ArrayList<>();
         var node = endNode;
@@ -114,52 +110,49 @@ public class ExploreGraph {
         return route;
     }
 
+    /**
+     * returns a path to the "best" node. Best is determined by a weighted combination of what is closest to the
+     * target and what is closest to the player
+     * @param current Current location of the player
+     * @return List of Nodes that represent a path to the best location
+     */
     public List<exploreNode> getPathToBestNode(long current){
 
+        int distanceThreshold = 1;
+
         // Get sorted list of unseen nodes
-        // Select all nodes that have are withing range of n + threshold, where n is the lowest distance
-        // select the one is the shortest distance to where the explorer is
+        var unseenNodes =  nodeMap.entrySet()
+                .stream()
+                .filter(Predicate.not(entry -> entry.getValue().Visited()))
+                .map(Map.Entry::getValue)
+                .sorted().toList();
 
-        var list = new ArrayList<>(seen.stream().toList());
-
-        if (list.isEmpty()){
+        if (unseenNodes.isEmpty()){
             System.err.println("maze is un-solvable");
             return new ArrayList<>();
         }
 
-        Collections.sort(list);
-        int distanceThreshold = 1;
-        var closestNodeDistance = list.get(0).getDistanceToTarget() + distanceThreshold;
-
-        var thresholdList = list.stream()
+        // Select all nodes that have are withing range of n + threshold, where n is the lowest distance
+        var closestNodeDistance = unseenNodes.get(0).getDistanceToTarget() + distanceThreshold;
+        var thresholdList = unseenNodes.stream()
                 .filter(n -> n.getDistanceToTarget() < closestNodeDistance)
-                .collect(Collectors.toList());
+                .toList();
 
+        // return early if there is only one entry
         if (thresholdList.size() == 1) {
             return shortestPathTo(current, thresholdList.get(0).getNodeID());
         }
 
-        exploreNode bestCandidate = null;
-        int CandidateDistance = 0;
-        for (var candidate : thresholdList){
-            var path = shortestPathTo(current, candidate.getNodeID());
+        // select the one is the shortest distance to where the explorer is
+        var bestCandidate =  thresholdList.stream()
+                .min((n1, n2) -> Integer.compare(
+                        shortestPathTo(current, n1.getNodeID()).size(),
+                        shortestPathTo(current, n2.getNodeID()).size()))
+                .get();
 
-            if (bestCandidate == null){
-                bestCandidate = candidate;
-                CandidateDistance = path.size();
 
-            } else {
-                if(CandidateDistance > path.size()) {
-                bestCandidate = candidate;
-                CandidateDistance = path.size();
-             }
-            }
-        }
-
-        assert bestCandidate != null;
         return shortestPathTo(current, bestCandidate.getNodeID());
     }
-
 
 
     /**
@@ -168,12 +161,12 @@ public class ExploreGraph {
      * @return Long
      */
     public exploreNode getClosestUnexploredNodeToGoal() {
-        var list = new ArrayList<>(seen.stream().toList());
-        Collections.sort(list);
-        return list.get(0);
+        return nodeMap.entrySet()
+                .stream()
+                .filter(Predicate.not(entry -> entry.getValue().Visited()))
+                .map(Map.Entry::getValue)
+                .sorted().toList().get(0);
     }
-
-
 
 }
 
@@ -199,11 +192,11 @@ class exploreNode implements Comparable<exploreNode>{
 
     }
 
-    public void setVisited(){
+    public void Visit(){
         visited = true;
     }
 
-    public boolean getVisited(){
+    public boolean Visited(){
         return visited;
     }
 
@@ -225,9 +218,7 @@ class exploreNode implements Comparable<exploreNode>{
 
     @Override
     public String toString() {
-        return "exploreNode{" +
-                "nodeID=" + nodeID +
-                '}';
+        return "node " + nodeID + " distance " + distanceToTarget;
     }
 }
 
