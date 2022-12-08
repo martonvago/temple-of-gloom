@@ -121,6 +121,13 @@ public class Path implements Comparable<Path> {
      */
     public void enhancePath(int maxWeight) {
         Set<Node> visitedNodes = new HashSet<>(getNodes());
+
+        if (getSize() == 1) {
+            Path enhancedPathForNode = enhanceNode(getNode(0), visitedNodes, maxWeight);
+            nodes = enhancedPathForNode.getNodes();
+            return;
+        }
+
         Path enhancedPath = new Path();
 
         Stack<Integer> budgets = getBudgetsForNodes(maxWeight);
