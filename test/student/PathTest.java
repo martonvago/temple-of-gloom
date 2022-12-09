@@ -1,6 +1,7 @@
 package student;
 
 import game.Node;
+import game.Tile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -111,17 +112,78 @@ public class PathTest {
         Assertions.assertEquals(1, plow.compareTo(phigh));
         Assertions.assertEquals(-1, phigh.compareTo(plow));
     }
+    // enhancePath()
+
+    // TODO: This is a bit more complicated since we need to feed a graph
+
+    // getGold()
+
+    @Test
+    void Test_getGold_zero() {
+        var nodes = nodeList(5);
+        for (int i = 0; i < nodes.size(); i++) {
+            Mockito.when(nodes.get(i).getTile()).thenReturn(
+                    new Tile(0, 0, 0, Tile.Type.FLOOR)
+            );
+        }
+
+        var p = new Path(nodes);
+
+        Assertions.assertEquals(0, p.getGold());
+    }
+
+    @Test
+    void Test_getGold_nonZero() {
+        var nodes = nodeList(5);
+        var golds = new int[] {0, 10, 100, 0, 1};
+        for (int i = 0; i < golds.length; i++) {
+            Mockito.when(nodes.get(i).getTile()).thenReturn(
+                    new Tile(0, 0, golds[i], Tile.Type.FLOOR)
+            );
+        }
+
+        var p = new Path(nodes);
+
+        Assertions.assertEquals(111, p.getGold());
+    }
+
+    // getNode
+    void Test_getNode() {
+        var nodes = nodeList(5);
+        var p = new Path();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            Assertions.assertEquals(nodes.get(i), p.getNode(i));
+        }
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            p.getNode(-1);
+        });
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            p.getNode(nodes.size() + 1);
+        });
+    }
+
+
+    // getNodes
+
+    // getSize
+
+    // getSubpath
+
+    // getWeight
+
+    // isLoop
+
+    //
+
+    // Helper functions
+
 
     private static Path getMockPath() {
         return Mockito.mock(Path.class);
     }
 
-    /*
-     * What to test in Path:
-     * Construction, that it's empty after being consturcted
-     * addNode - that the node being added is added, and that other nodes are not present
-     * addNode -
-     */
 
     private static ArrayList<Node> nodeList(int num) {
         ArrayList<Node> list = new ArrayList<>();
@@ -130,6 +192,7 @@ public class PathTest {
         }
         return list;
     }
+
 
     private static ArrayList<Node> nodeList(Node[] nodes) {
         return new ArrayList<>(Arrays.asList(nodes));
