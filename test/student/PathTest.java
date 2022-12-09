@@ -1,5 +1,6 @@
 package student;
 
+import game.Edge;
 import game.Node;
 import game.Tile;
 import org.junit.jupiter.api.Assertions;
@@ -8,9 +9,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class PathTest {
     // Constructor tests
@@ -148,9 +147,10 @@ public class PathTest {
     }
 
     // getNode
+    @Test
     void Test_getNode() {
         var nodes = nodeList(5);
-        var p = new Path();
+        var p = new Path(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
             Assertions.assertEquals(nodes.get(i), p.getNode(i));
@@ -164,18 +164,91 @@ public class PathTest {
         });
     }
 
-
     // getNodes
+
+    @Test
+    void Test_getNodes() {
+        var nodes = nodeList(4);
+        var p = new Path(nodes);
+
+        Assertions.assertEquals(nodes, p.getNodes());
+    }
 
     // getSize
 
+    @Test
+    void Test_getSize() {
+        var nodes = nodeList(11);
+        var p = new Path(nodes);
+
+        Assertions.assertEquals(nodes.size(), p.getSize());
+    }
+
     // getSubpath
+
+    @Test
+    void Test_getSubpath() {
+        var nodes = nodeList(10);
+        var p = new Path(nodes);
+
+        Assertions.assertEquals(nodes.subList(0, 2), p.getSubpath(0, 2).getNodes());
+        Assertions.assertEquals(nodes.subList(5, 9), p.getSubpath(5, 4).getNodes());
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            p.getSubpath(5, 6);
+        });
+    }
 
     // getWeight
 
+    @Test
+    void Test_getWeight_zero() {
+        var nodes = nodeList(5);
+        // Beware: This is probably mimicing the implementation too much.
+        // If the implementation of getWeight is changed (i.e, to use i = 0; i < size - 1), then the test will fail.
+        for (int i = 1; i < nodes.size(); i++) {
+            var na = nodes.get(i);
+            var nb = nodes.get(i-1);
+            Mockito.when(na.getEdge(nb)).thenReturn(
+                    new Edge(na, nb, 0)
+            );
+        }
+
+        var p = new Path(nodes);
+
+        Assertions.assertEquals(0, p.getWeight());
+    }
+
+    @Test
+    void Test_getWeight_nonZero() {
+        var nodes = nodeList(5);
+
+        List<Integer> lengths = List.of(5, 8, 7, 5);
+        // Beware: This is probably mimicing the implementation too much.
+        // If the implementation of getWeight is changed (i.e, to use i = 0; i < size - 1), then the test will fail.
+        for (int i = 1; i < nodes.size(); i++) {
+            var na = nodes.get(i);
+            var nb = nodes.get(i-1);
+            Mockito.when(na.getEdge(nb)).thenReturn(
+                    new Edge(na, nb, lengths.get(i-1))
+            );
+        }
+
+        var p = new Path(nodes);
+
+        Assertions.assertEquals(
+                lengths.stream().reduce(Integer::sum).get(),
+                p.getWeight()
+        );
+    }
+
     // isLoop
 
-    //
+    // joinPath
+
+    // removeGoldlessLoops
+
+    // replaceAtIndex
 
     // Helper functions
 
