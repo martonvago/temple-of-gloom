@@ -5,9 +5,7 @@ import game.Node;
 import game.Tile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 import java.util.*;
 
@@ -120,8 +118,8 @@ public class PathTest {
     @Test
     void Test_getGold_zero() {
         var nodes = nodeList(5);
-        for (int i = 0; i < nodes.size(); i++) {
-            Mockito.when(nodes.get(i).getTile()).thenReturn(
+        for (Node node : nodes) {
+            Mockito.when(node.getTile()).thenReturn(
                     new Tile(0, 0, 0, Tile.Type.FLOOR)
             );
         }
@@ -155,13 +153,13 @@ public class PathTest {
         for (int i = 0; i < nodes.size(); i++) {
             Assertions.assertEquals(nodes.get(i), p.getNode(i));
         }
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            p.getNode(-1);
-        });
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> p.getNode(-1)
+        );
 
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            p.getNode(nodes.size() + 1);
-        });
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> p.getNode(nodes.size() + 1)
+        );
     }
 
     // getNodes
@@ -194,9 +192,9 @@ public class PathTest {
         Assertions.assertEquals(nodes.subList(0, 2), p.getSubpath(0, 2).getNodes());
         Assertions.assertEquals(nodes.subList(5, 9), p.getSubpath(5, 4).getNodes());
 
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            p.getSubpath(5, 6);
-        });
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> p.getSubpath(5, 6)
+        );
     }
 
     // getWeight
@@ -204,7 +202,7 @@ public class PathTest {
     @Test
     void Test_getWeight_zero() {
         var nodes = nodeList(5);
-        // Beware: This is probably mimicing the implementation too much.
+        // Beware: This is probably mimicking the implementation too much.
         // If the implementation of getWeight is changed (i.e, to use i = 0; i < size - 1), then the test will fail.
         for (int i = 1; i < nodes.size(); i++) {
             var na = nodes.get(i);
@@ -224,7 +222,7 @@ public class PathTest {
         var nodes = nodeList(5);
 
         List<Integer> lengths = List.of(5, 8, 7, 5);
-        // Beware: This is probably mimicing the implementation too much.
+        // Beware: This is probably mimicking the implementation too much.
         // If the implementation of getWeight is changed (i.e, to use i = 0; i < size - 1), then the test will fail.
         for (int i = 1; i < nodes.size(); i++) {
             var na = nodes.get(i);
