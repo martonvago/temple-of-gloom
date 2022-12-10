@@ -17,11 +17,11 @@ public class ExploreNode implements Comparable<ExploreNode> {
         return Integer.compare(this.getDistanceToTarget(), n2.getDistanceToTarget());
     }
 
-    public ExploreNode(long id, int distance, boolean seen) {
+    public ExploreNode(long id, int distance, boolean visit) {
 
         nodeID = id;
         distanceToTarget = distance;
-        visited = seen;
+        visited = visit;
 
     }
 
