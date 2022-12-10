@@ -1,14 +1,13 @@
 package student;
 
 import game.NodeStatus;
-import game.Pair;
 
 import java.util.*;
 import java.util.function.Predicate;
 
 
 public class ExploreGraph {
-    private final Map<Long, exploreNode> nodeMap = new HashMap<>();
+    private final Map<Long, ExploreNode> nodeMap = new HashMap<>();
 
     public void logNodeVisit(long current, int distance, Collection<NodeStatus> neighbours) {
 
@@ -16,7 +15,7 @@ public class ExploreGraph {
 
         if (!nodeMap.containsKey(current)){
             // First time visiting a node
-            var current_node = new exploreNode( current, distance, true);
+            var current_node = new ExploreNode( current, distance, true);
             nodeMap.put(current, current_node);
         } else {
             // visiting a node that is already present
@@ -30,7 +29,7 @@ public class ExploreGraph {
             // Only create new nodes if they have not been seen before
             if (!nodeMap.containsKey(neighbour.nodeID())){
 
-                var neighbour_node =new exploreNode( neighbour.nodeID(), neighbour.distanceToTarget(), false);
+                var neighbour_node =new ExploreNode( neighbour.nodeID(), neighbour.distanceToTarget(), false);
                 // Add parent node
                 neighbour_node.AddNeighbour(parent);
                 nodeMap.put(neighbour.nodeID(), neighbour_node);
@@ -41,23 +40,23 @@ public class ExploreGraph {
 
     }
 
-    public List<exploreNode> getUnexploredNeighbours(long current) {
+    public List<ExploreNode> getUnexploredNeighbours(long current) {
 
         return nodeMap.get(current).getNeighbours().stream()
-                .filter(Predicate.not(exploreNode::Visited))
+                .filter(Predicate.not(ExploreNode::Visited))
                 .sorted()
                 .toList();
     }
 
-    private List<exploreNode> shortestPathTo(long start, long target){
+    private List<ExploreNode> shortestPathTo(long start, long target){
 
-        Queue<exploreNode> queue = new LinkedList<>();
+        Queue<ExploreNode> queue = new LinkedList<>();
         queue.add(nodeMap.get(start));
         var startNode =  nodeMap.get(start);
         var endNode = nodeMap.get(target);
 
-        Map<exploreNode, Boolean> bfsVisited = new HashMap<>();
-        Map<exploreNode, exploreNode> bfsPrevious = new HashMap<>();
+        Map<ExploreNode, Boolean> bfsVisited = new HashMap<>();
+        Map<ExploreNode, ExploreNode> bfsPrevious = new HashMap<>();
 
         // null is a sentinel value
         bfsVisited.put(startNode, true);
@@ -90,9 +89,9 @@ public class ExploreGraph {
      * @param endNode a sentinel node indicating that the path is complete
      * @return a list of Explorer nodes that represent a path
      */
-    private List<exploreNode> convertToPath(Map<exploreNode, exploreNode> bfsPrevious, exploreNode endNode){
+    private List<ExploreNode> convertToPath(Map<ExploreNode, ExploreNode> bfsPrevious, ExploreNode endNode){
 
-        List<exploreNode> route = new ArrayList<>();
+        List<ExploreNode> route = new ArrayList<>();
         var node = endNode;
         while(node != null){
             var previous = bfsPrevious.get(node);
@@ -116,7 +115,7 @@ public class ExploreGraph {
      * @param current Current location of the player
      * @return List of Nodes that represent a path to the best location
      */
-    public List<exploreNode> getPathToBestNode(long current){
+    public List<ExploreNode> getPathToBestNode(long current){
 
         int distanceThreshold = 1;
 
@@ -164,7 +163,7 @@ public class ExploreGraph {
      *
      * @return Long
      */
-    public exploreNode getClosestUnexploredNodeToGoal() {
+    public ExploreNode getClosestUnexploredNodeToGoal() {
         return nodeMap.entrySet()
                 .stream()
                 .filter(Predicate.not(entry -> entry.getValue().Visited()))
@@ -172,58 +171,6 @@ public class ExploreGraph {
                 .sorted().toList().get(0);
     }
 
-}
-
-class exploreNode implements Comparable<exploreNode>{
-
-    private final Set<exploreNode> neighbours = new HashSet<>();
-    private final int distanceToTarget;
-    private boolean visited;
-    private final long nodeID;
-
-
-    @Override
-    public int compareTo(exploreNode n2){
-        // if distances are the same pick the one with the highest node id
-        return Integer.compare(this.getDistanceToTarget(), n2.getDistanceToTarget());
-    }
-
-    public exploreNode( long id, int distance, boolean seen){
-
-        nodeID = id;
-        distanceToTarget = distance;
-        visited = seen;
-
-    }
-
-    public void Visit(){
-        visited = true;
-    }
-
-    public boolean Visited(){
-        return visited;
-    }
-
-    public void AddNeighbour(exploreNode neighbour){
-        this.neighbours.add(neighbour);
-    }
-
-    public Set<exploreNode> getNeighbours() {
-        return neighbours;
-    }
-
-    public int getDistanceToTarget() {
-        return distanceToTarget;
-    }
-
-    public long getNodeID(){
-        return nodeID;
-    }
-
-    @Override
-    public String toString() {
-        return "node " + nodeID + " distance " + distanceToTarget;
-    }
 }
 
 //-s -8565390209477936194
