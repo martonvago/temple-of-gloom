@@ -10,21 +10,21 @@ import java.util.Set;
  */
 public interface DijkstraNode<NodeType extends DijkstraNode<NodeType>> {
     /**
-     * Return the id of the node
+     * Return the id of the node.
      *
      * @return the node id
      */
     long getId();
 
     /**
-     * Return the neighbours of the node, preserving their type
+     * Return the neighbours of the node, preserving their type.
      *
      * @return the neighbours
      */
     Set<NodeType> getNeighbours();
 
     /**
-     * Return a DijkstraPath of the correct type containing the node
+     * Return a DijkstraPath of the correct type containing the node.
      *
      * @return the path
      */
