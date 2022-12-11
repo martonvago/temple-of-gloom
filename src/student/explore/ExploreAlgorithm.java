@@ -1,4 +1,4 @@
-package student;
+package student.explore;
 
 import game.ExplorationState;
 
@@ -22,7 +22,7 @@ public class ExploreAlgorithm {
         while (state.getDistanceToTarget() != 0) {
             g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
             if (keepExploring()) {
-                var nextMove = g.getUnexploredNeighbours(state.getCurrentLocation()).get(0).getNodeID();
+                var nextMove = g.getUnexploredNeighbours(state.getCurrentLocation()).get(0).getId();
                 state.moveTo(nextMove);
             } else {
                 moveToLastKnownGoodNode();
@@ -36,11 +36,10 @@ public class ExploreAlgorithm {
         // Make sure to move to the unseen tile and log it
         var path = g.getPathToBestNode(state.getCurrentLocation());
         System.out.println("path back " + path);
-        for (var node : path) {
-            state.moveTo(node.getNodeID());
+        path.getNodes().stream().skip(1).forEach(node -> {
+            state.moveTo(node.getId());
             g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
-
-        }
+        });
     }
 
     private boolean keepExploring() {
