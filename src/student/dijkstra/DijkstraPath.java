@@ -1,8 +1,8 @@
 package student.dijkstra;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A DijkstraPath contains a list of adjacent nodes, representing a valid sequence of steps through the cavern.
@@ -111,6 +111,6 @@ public abstract class DijkstraPath<NodeType extends DijkstraNode<NodeType>> impl
 
     @Override
     public String toString() {
-        return getNodes().stream().map(n -> Long.toString(n.getId())).collect(Collectors.joining(", "));
+        return Arrays.toString(getNodes().stream().mapToLong(DijkstraNode::getId).toArray());
     }
 }

@@ -6,22 +6,25 @@ import game.Tile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import student.escape.EscapeNode;
+import student.escape.EscapePath;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PathTest {
+public class EscapePathTest {
     // Constructor tests
     
     @Test
     void Test_NewPathIsEmpty() {
-        var p = new Path();
+        var p = new EscapePath();
         Assertions.assertEquals(nodeList(0), p.getNodes());
     }
 
     @Test
     void Test_NewPathFromPathIsEqual() {
         var nodes = nodeList(2);
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(nodes, p.getNodes());
     }
@@ -30,7 +33,7 @@ public class PathTest {
     @Test
     void Test_NewPathFromNodeContainsNode() {
         var nodes = nodeList(1);
-        var p = new Path(nodes.get(0));
+        var p = new EscapePath(nodes.get(0));
 
         Assertions.assertEquals(nodes, p.getNodes());
     }
@@ -40,9 +43,9 @@ public class PathTest {
     @Test
     void Test_addNode() {
         var nodes = nodeList(5);
-        var newNode = getMockNode();
+        var newNode = getMockEscapeNode();
 
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(nodes, p.getNodes());
 
@@ -57,9 +60,9 @@ public class PathTest {
     @Test
     void Test_cloneWithNode() {
         var nodes = nodeList(5);
-        var newNode = getMockNode();
+        var newNode = getMockEscapeNode();
 
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(nodes, p.getNodes());
 
@@ -118,13 +121,13 @@ public class PathTest {
     @Test
     void Test_getGold_zero() {
         var nodes = nodeList(5);
-        for (Node node : nodes) {
+        for (EscapeNode node : nodes) {
             Mockito.when(node.getTile()).thenReturn(
                     new Tile(0, 0, 0, Tile.Type.FLOOR)
             );
         }
 
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(0, p.getGold());
     }
@@ -139,7 +142,7 @@ public class PathTest {
             );
         }
 
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(111, p.getGold());
     }
@@ -148,7 +151,7 @@ public class PathTest {
     @Test
     void Test_getNode() {
         var nodes = nodeList(5);
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
             Assertions.assertEquals(nodes.get(i), p.getNode(i));
@@ -167,7 +170,7 @@ public class PathTest {
     @Test
     void Test_getNodes() {
         var nodes = nodeList(4);
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(nodes, p.getNodes());
     }
@@ -177,7 +180,7 @@ public class PathTest {
     @Test
     void Test_getSize() {
         var nodes = nodeList(11);
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(nodes.size(), p.getSize());
     }
@@ -187,7 +190,7 @@ public class PathTest {
     @Test
     void Test_getSubpath() {
         var nodes = nodeList(10);
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(nodes.subList(0, 2), p.getSubpath(0, 2).getNodes());
         Assertions.assertEquals(nodes.subList(5, 9), p.getSubpath(5, 4).getNodes());
@@ -207,12 +210,12 @@ public class PathTest {
         for (int i = 1; i < nodes.size(); i++) {
             var na = nodes.get(i);
             var nb = nodes.get(i-1);
-            Mockito.when(na.getEdge(nb)).thenReturn(
-                    new Edge(na, nb, 0)
+            Mockito.when(na.getEdge(nb.getId())).thenReturn(
+                    new Edge(getMockNode(), getMockNode(), 0)
             );
         }
 
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(0, p.getWeight());
     }
@@ -227,12 +230,12 @@ public class PathTest {
         for (int i = 1; i < nodes.size(); i++) {
             var na = nodes.get(i);
             var nb = nodes.get(i-1);
-            Mockito.when(na.getEdge(nb)).thenReturn(
-                    new Edge(na, nb, lengths.get(i-1))
+            Mockito.when(na.getEdge(nb.getId())).thenReturn(
+                    new Edge(getMockNode(), getMockNode(), lengths.get(i-1))
             );
         }
 
-        var p = new Path(nodes);
+        var p = new EscapePath(nodes);
 
         Assertions.assertEquals(
                 lengths.stream().reduce(Integer::sum).get(),
@@ -251,26 +254,21 @@ public class PathTest {
     // Helper functions
 
 
-    private static Path getMockPath() {
-        return Mockito.mock(Path.class);
+    private static EscapePath getMockPath() {
+        return Mockito.mock(EscapePath.class);
     }
 
 
-    private static ArrayList<Node> nodeList(int num) {
-        ArrayList<Node> list = new ArrayList<>();
+    private static ArrayList<EscapeNode> nodeList(int num) {
+        ArrayList<EscapeNode> list = new ArrayList<>();
         for (int i = 0; i < num; i++) {
-            list.add(getMockNode());
+            list.add(getMockEscapeNode());
         }
         return list;
     }
 
-
-    private static ArrayList<Node> nodeList(Node[] nodes) {
-        return new ArrayList<>(Arrays.asList(nodes));
-    }
-
-    private static ArrayList<Node> nodeList(ArrayList<Node> nodes) {
-       return new ArrayList<>(nodes);
+    private static EscapeNode getMockEscapeNode() {
+        return Mockito.mock(EscapeNode.class);
     }
 
     private static Node getMockNode() {

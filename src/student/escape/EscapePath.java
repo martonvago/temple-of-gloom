@@ -191,7 +191,7 @@ public class EscapePath extends DijkstraPath<EscapeNode> {
      * @param size the number of nodes in the sublist
      * @return the EscapePath containing the sublist
      */
-    private EscapePath getSubpath(int start, int size) {
+    public EscapePath getSubpath(int start, int size) {
         int end = start + size - 1;
         if (getSize() <= end) {
             throw new IndexOutOfBoundsException();
