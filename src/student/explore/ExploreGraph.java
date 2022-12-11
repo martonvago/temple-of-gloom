@@ -77,7 +77,7 @@ public class ExploreGraph {
     /**
      * @return a list of unvisited nodes in order of the distance to target
      */
-    private List<ExploreNode> listUnVisitedNodesSorted() {
+    public List<ExploreNode> listUnVisitedNodesSorted() {
         return nodeMap.entrySet()
                 .stream()
                 .filter(Predicate.not(entry -> entry.getValue().getVisited()))
