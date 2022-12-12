@@ -119,7 +119,7 @@ public class ExploreGraph {
         // Select all nodes that have are withing range of n + threshold, where n is the lowest distance
         var closestNodeDistance = unVisitedNodes.get(0).getDistanceToTarget() + distanceThreshold;
         var nodeIdsWithinRange = unVisitedNodes.stream()
-                .filter(n -> n.getDistanceToTarget() < closestNodeDistance)
+                .filter(n -> n.getDistanceToTarget() <= closestNodeDistance)
                 .mapToLong(ExploreNode::getId)
                 .boxed().collect(Collectors.toSet());
 
