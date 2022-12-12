@@ -11,19 +11,6 @@ import java.util.regex.Pattern;
 import java.util.stream.LongStream;
 
 public class ExplorerTest {
-  //  private final PrintStream standardOut = System.out;
- //   private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
-//
-  //  @BeforeEach
- //   void setUp() {
- //       System.setOut(new PrintStream(outputStreamCaptor));
-//    }
-//
-   // @AfterEach
-   // void tearDown() {
-   //     System.setOut(standardOut);
-    //}
-
     @Test
     void test_game_performance() {
         final PrintStream stdout = System.out;
@@ -34,7 +21,7 @@ public class ExplorerTest {
         System.setOut(ioStream);
         System.setErr(ioStream);
 
-        var numRuns = 100;
+        var numRuns = 1500;
         AtomicInteger failEscape = new AtomicInteger();
 
         var multiplers = new ArrayList<Integer>(numRuns);
@@ -73,11 +60,11 @@ public class ExplorerTest {
                     }
                 }
             });
-        }
-        finally {
-            System.setOut(stdout);
-            System.setErr(stderr);
-        }
+        } finally {}
+//        finally {
+//            System.setOut(stdout);
+//            System.setErr(stderr);
+//        }
         System.out.println("Total runs        : " + numRuns);
         System.out.println("Failed Explore    : " + (numRuns - multiplers.size()));
         System.out.println("Failed Escape     : " + failEscape.get());
@@ -88,7 +75,4 @@ public class ExplorerTest {
         System.out.println("Average Score     : " + (scores.stream().reduce(Integer::sum).orElse(0) / numRuns));
 
     }
-
-
-
 }

@@ -2,6 +2,8 @@ package student;
 
 import game.EscapeState;
 import game.ExplorationState;
+import student.escape.EscapeAlgorithm;
+import student.explore.ExploreAlgorithm;
 
 public class Explorer {
     /**
@@ -62,40 +64,6 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        int maxWeight = state.getTimeRemaining();
-        Path path = new PathAlgorithm(state).findShortestPathDijkstra();
-
-        int unusedBudget = maxWeight - path.getWeight();
-        int oldSize = path.getSize();
-
-        // Enhance and trim the path until the budget is spent or the path stops growing
-        while (unusedBudget > 0) {
-            path.enhancePath(maxWeight);
-            path.removeGoldlessLoops();
-            if (oldSize >= path.getSize()) {
-                break;
-            }
-            unusedBudget = maxWeight - path.getWeight();
-            oldSize = path.getSize();
-        }
-
-        pickUpGoldIfAny(state);
-        path.getNodes().stream().skip(1).forEach(node -> {
-            state.moveTo(node);
-            pickUpGoldIfAny(state);
-        });
+        new EscapeAlgorithm(state).escape();
     }
-
-    /**
-     * Pick up gold from the current node if the node contains gold.
-     *
-     * @param state the information available at the current state
-     */
-    private void pickUpGoldIfAny(EscapeState state) {
-        if (state.getCurrentNode().getTile().getGold() > 0) {
-            state.pickUpGold();
-        }
-    }
-
 }
-
