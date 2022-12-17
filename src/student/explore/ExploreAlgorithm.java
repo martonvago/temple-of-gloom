@@ -31,11 +31,8 @@ public class ExploreAlgorithm {
     }
 
     private void moveToLastKnownGoodNode() {
-
-        System.out.println("moving back");
         // Make sure to move to the unseen tile and log it
         var path = g.getPathToBestNode(state.getCurrentLocation());
-        System.out.println("path back " + path);
         path.getNodes().stream().skip(1).forEach(node -> {
             state.moveTo(node.getId());
             g.logNodeVisit(state.getCurrentLocation(), state.getDistanceToTarget(), state.getNeighbours());
