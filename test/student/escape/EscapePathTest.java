@@ -1,4 +1,4 @@
-package student;
+package student.escape;
 
 import game.Edge;
 import game.Node;
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class EscapePathTest {
     // Constructor tests
-    
+
     @Test
     void Test_NewPathIsEmpty() {
         var p = new EscapePath();
@@ -135,7 +135,7 @@ public class EscapePathTest {
     @Test
     void Test_getGold_nonZero() {
         var nodes = nodeList(5);
-        var golds = new int[] {0, 10, 100, 0, 1};
+        var golds = new int[]{0, 10, 100, 0, 1};
         for (int i = 0; i < golds.length; i++) {
             Mockito.when(nodes.get(i).getTile()).thenReturn(
                     new Tile(0, 0, golds[i], Tile.Type.FLOOR)
@@ -209,7 +209,7 @@ public class EscapePathTest {
         // If the implementation of getWeight is changed (i.e, to use i = 0; i < size - 1), then the test will fail.
         for (int i = 1; i < nodes.size(); i++) {
             var na = nodes.get(i);
-            var nb = nodes.get(i-1);
+            var nb = nodes.get(i - 1);
             Mockito.when(na.getEdge(nb.getId())).thenReturn(
                     new Edge(getMockNode(), getMockNode(), 0)
             );
@@ -229,9 +229,9 @@ public class EscapePathTest {
         // If the implementation of getWeight is changed (i.e, to use i = 0; i < size - 1), then the test will fail.
         for (int i = 1; i < nodes.size(); i++) {
             var na = nodes.get(i);
-            var nb = nodes.get(i-1);
+            var nb = nodes.get(i - 1);
             Mockito.when(na.getEdge(nb.getId())).thenReturn(
-                    new Edge(getMockNode(), getMockNode(), lengths.get(i-1))
+                    new Edge(getMockNode(), getMockNode(), lengths.get(i - 1))
             );
         }
 
@@ -243,22 +243,38 @@ public class EscapePathTest {
         );
     }
 
-    // isLoop
-
-    // joinPath
-
-    // removeGoldlessLoops
-
     // replaceAtIndex
+
+    @Test
+    void Test_replaceAtIndex_withOne() {
+        var nodes = nodeList(7);
+        var p = new EscapePath(nodes);
+
+        var node = nodeList(1);
+
+        var newNodes = nodeList(nodes);
+        newNodes.remove(5);
+        newNodes.addAll(5, node);
+
+        p.replaceAtIndex(node, 5);
+
+        Assertions.assertEquals(newNodes, p.getNodes());
+
+    }
 
     // Helper functions
 
-
+    /**
+     * @return a mock of Path
+     */
     private static EscapePath getMockPath() {
         return Mockito.mock(EscapePath.class);
     }
 
-
+    /**
+     * @param num the number of nodes to include in the list
+     * @return a List of mocked nodes
+     */
     private static ArrayList<EscapeNode> nodeList(int num) {
         ArrayList<EscapeNode> list = new ArrayList<>();
         for (int i = 0; i < num; i++) {
@@ -267,11 +283,27 @@ public class EscapePathTest {
         return list;
     }
 
+    /**
+     * @param nodes list of EscapeNodes to copy
+     * @return a list with the same EscapeNodes
+     */
+    private static ArrayList<EscapeNode> nodeList(ArrayList<EscapeNode> nodes) {
+        return new ArrayList<>(nodes);
+    }
+
+    /**
+     * @return a mock of EscapeNode
+     */
     private static EscapeNode getMockEscapeNode() {
         return Mockito.mock(EscapeNode.class);
     }
 
+    /**
+     * @return a mock of Node
+     */
     private static Node getMockNode() {
         return Mockito.mock(Node.class);
     }
 }
+
+

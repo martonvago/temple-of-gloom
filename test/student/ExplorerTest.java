@@ -27,7 +27,7 @@ public class ExplorerTest {
         var multiplers = new ArrayList<Integer>(numRuns);
         var golds = new ArrayList<Integer>(numRuns);
         var scores = new ArrayList<Integer>(numRuns);
-        try {
+//        try {
             var rng = new Random();
             rng.setSeed(25761623242424242L);
 
@@ -37,11 +37,17 @@ public class ExplorerTest {
                             GameState.runNewGame(l, false)
                     );
 
+            // This is a regex that matches and captures:
+            // Bonus: 1.(\d)
+            // Gold: (\d)
+            // Score: (\d
+            // (it will also capture Goore/Boore/Bold, but these do not appear in the output)
+            // We later use this regex to capture the scores etc from the output.
             var re = Pattern.compile(
                     "^(Sc|Go|Bo)(?:nus[^:]+: 1\\.?|(?:ld|ore)[^:]+: )([0-9]+)?$"
             );
             var logs = inOut.toString();
-            stdout.println(logs);
+            //stdout.println(logs);
 
             logs.lines().forEach(s -> {
                 if (s.startsWith("Your solution to explore")) {
@@ -60,7 +66,7 @@ public class ExplorerTest {
                     }
                 }
             });
-        } finally {}
+//        } finally {}
 //        finally {
 //            System.setOut(stdout);
 //            System.setErr(stderr);

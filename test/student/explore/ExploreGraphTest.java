@@ -1,4 +1,4 @@
-package student;
+package student.explore;
 
 import game.NodeStatus;
 import org.junit.jupiter.api.Assertions;
