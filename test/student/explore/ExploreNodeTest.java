@@ -1,4 +1,4 @@
-package student;
+package student.explore;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

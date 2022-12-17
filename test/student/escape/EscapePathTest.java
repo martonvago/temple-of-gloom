@@ -1,4 +1,4 @@
-package student;
+package student.escape;
 
 import game.Edge;
 import game.Node;
