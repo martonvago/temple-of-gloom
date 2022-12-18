@@ -21,8 +21,6 @@ public class ExploreGraph {
      */
     public void logNodeVisit(long current, int distance, Collection<NodeStatus> neighbours) {
 
-        System.out.println("visiting node " + current + " distance " + distance);
-
         if (!nodeMap.containsKey(current)) {
             // First time visiting a node
             var currentNode = new ExploreNode(current, distance, true);
@@ -34,7 +32,6 @@ public class ExploreGraph {
         }
 
         logNeighbours(current, neighbours);
-
     }
 
     /**
