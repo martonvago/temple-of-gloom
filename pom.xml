@@ -4,10 +4,10 @@
         http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>uk.ac.bbk.dcs.sp3.group2</groupId>
-    <artifactId>cave-thing</artifactId>
+    <artifactId>temple-of-gloom</artifactId>
     <packaging>jar</packaging>
     <version>0.1-SNAPSHOT</version>
-    <name>Cave Thing</name>
+    <name>Temple of Gloom</name>
 
     <dependencies>
         <dependency>
@@ -36,7 +36,7 @@
     </properties>
 
     <build>
-        <finalName>Cave</finalName>
+        <finalName>Temple of Gloom</finalName>
         <plugins>
             <plugin>
              <groupId>org.apache.maven.plugins</groupId>
